@@ -13,7 +13,7 @@ VELAはPython、PyQtWebEngine製のモダンなウェブブラウザです。
 - [インストール](#インストール)
 - [使い方](#使い方)
 - [依存関係](#依存関係)
-- [公式サイト](https://studio-nosa.live/project_equa.html)
+- [公式サイト](https://abatbeliever.net/app/VELABrowser/)
 
 ## インストール
 インストールは現時点(Alpha 0.1.0)では不要です。
