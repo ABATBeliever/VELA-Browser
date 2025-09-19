@@ -1,15 +1,13 @@
-# EQUA By Studio NØSa
+# VELA Browser - Vital Environment for Liberty Access
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
 ![Version](https://img.shields.io/badge/version-0.1.0-green.svg)
 ![Version](https://img.shields.io/badge/Language-Python3.13-yellow.svg)
 
 ## 概要
-EQUAはStudio NØSaがお届けするプロダクトの第一弾でありNEXAグループ(NEXA,EQUA,ZENO)の第一弾として、公開したPythonを使用したWebブラウザです。
+VELAはPython、PyQtWebEngine製のモダンなウェブブラウザです。
 
-タブブラウジング、ブックマーク、履歴、簡易広告ブロッカー、アップデート確認など、ブラウザとして使うときに十分な機能を提供しています。
-
-(Equilibrium + Quality)NEXA(開発中)から隠し機能などを削除し、バランスを追求した標準版。
+タブブラウジング、ブックマーク、履歴機能、簡易広告ブロッカーなどの、インターネットへの自由なアクセスに必要な機能をすべて押さえた、モダンなクロスプラットフォームブラウザです。
 
 ## 目次
 - [インストール](#インストール)
@@ -18,16 +16,13 @@ EQUAはStudio NØSaがお届けするプロダクトの第一弾でありNEXAグ
 - [公式サイト](https://studio-nosa.live/project_equa.html)
 
 ## インストール
-こちらはポータブル版になりますので、インストールは必要ありません。ダウンロード後すぐに使い始められます。
-インストールする方のEQUAをお求めの場合は[こちら](https://github.com/Keychrom/Project-EQUA)
+インストールは現時点(Alpha 0.1.0)では不要です。
+
 ## 使い方
 ダウンロードしたexeファイルをそのまま起動してください
 
 ## 依存関係
-設定から、「このEQUAについて」をご覧ください
-
-## 質問がありましたら
-公式サイトにある[Support](https://studio-nosa.live/support.html)をご覧ください
-
-## バグ情報
-急ピッチでEQUAをポータブル化したため、アップデートの確認等の機能が正常に動作しません。更新情報が出現しても更新しないでください。
+- Qt Framework (The Qt Company Ltd.)
+- PyQt6 (The Qt Company Ltd. and Riverbank Computing Ltd.)
+- QtAwesome (The Spider Development Team)
+- EQUA (StudioNOSA,猫星吹恋)、フォーク元

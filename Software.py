@@ -1,4 +1,24 @@
 # -*- coding: utf-8 -*-
+#
+print('                         mm    mm  mmmmmmmm  mm           mm    ')
+print('                        "##  ##"  ##""""""  ##          ####    ')
+print('                        ##  ##   ##        ##          ####     ')
+print('                       ##  ##   #######   ##         ##  ##     ')
+print('                      ####    ##        ##         ######       ')
+print('                     ####    ##mmmmmm  ##mmmmmm  m##  ##m       ')
+print('                    """"    """"""""  """"""""  ""    ""        \n')
+print('                              VELA Browser')
+print('                   Vital Environment for Liberty Access')
+print('               2025 ABATBeliever. Forked From EQUA(Nekoboshi)')
+
+__version__       = "0.1.0"  # TODO: 現在のアプリケーションのバージョンに合わせてください
+GITHUB_REPO_OWNER = "ABATBeliever"  # TODO: あなたのGitHubユーザー名またはオーガニゼーション名に置き換えてください
+GITHUB_REPO_NAME  = "VELA-Browser"  # TODO: あなたのGitHubリポジトリ名に置き換えてください
+
+print('*\nTHIS VERSION IS Alpha!\nLog:')
+
+# ==============================================================================================================================================================
+# Core/import
 
 # 必要なモジュールをインポート
 import sys
@@ -12,7 +32,7 @@ try: # winregはWindows専用モジュールなので、他のOSでエラーに�
     import winreg
 except ImportError:
     winreg = None # Windows以外のOS用のフォールバック
-from packaging.version import parse as parse_version, InvalidVersion # バージョン番号の比較に使用
+# from packaging.version import parse as parse_version, InvalidVersion # バージョン番号の比較に使用
 from datetime import datetime # 日時情報の扱いに使用
 from html.parser import HTMLParser # HTMLの解析に使用 (ブックマークインポート)
 import qtawesome as qta # Font Awesomeアイコンを使用するためのライブラリ
@@ -27,10 +47,8 @@ from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile, QWebEng
 from PyQt6.QtCore import QUrl, QSettings, Qt, QStandardPaths, QSize, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QIcon, QCloseEvent, QAction, QDesktopServices, QPixmap, QColor
 
-# アプリケーションのバージョンとGitHubリポジトリ情報
-__version__ = "0.1.0"  # TODO: 現在のアプリケーションのバージョンに合わせてください
-GITHUB_REPO_OWNER = "Keychrom"  # TODO: あなたのGitHubユーザー名またはオーガニゼーション名に置き換えてください
-GITHUB_REPO_NAME = "Project-EQUA"  # TODO: あなたのGitHubリポジトリ名に置き換えてください
+# ==============================================================================================================================================================
+# Core/Settings
 
 # --- ポータブル化対応 ---
 def get_portable_base_path():
@@ -66,6 +84,9 @@ persistent_profile = None # Cookieやキャッシュなどを保持するプロ�
 SETTINGS_FILE_NAME = "settings.ini"
 DATA_DIR_NAME = "data"
 DEFAULT_ADBLOCK_LIST_URL = "https://easylist.to/easylist/easylist.txt"
+
+# ==============================================================================================================================================================
+# Feather/Adblock
 
 # 広告ブロック用リクエストインターセプター
 class AdBlockInterceptor(QWebEngineUrlRequestInterceptor):
@@ -164,53 +185,8 @@ class UpdateBlocklistThread(QThread):
         except Exception as e:
             self.finished.emit(False, "", str(e)) # 例外発生時に失敗シグナルを送信
 
-# GitHubリリースを非同期でチェックするためのワーカースレッド
-class UpdateCheckThread(QThread):
-    # シグナル: 処理完了時に (成功/失敗, 最新バージョン, リリースURL, アセットURL, エラーメッセージ) を送信
-    finished = pyqtSignal(bool, str, str, str, str)  # success, latest_version, release_url, asset_url, error_message
-
-    def __init__(self, owner, repo, parent=None):
-        super().__init__(parent)
-        self.owner = owner
-        self.repo = repo
-
-    # スレッドのメイン処理
-    def run(self):
-        try:
-            # /releases/latest はプレリリースを無視するため、/releases を使用して最新のリリース（プレリリースを含む）を取得します
-            url = f"https://api.github.com/repos/{self.owner}/{self.repo}/releases"
-            req = urllib.request.Request(
-                url,
-                headers={'User-Agent': 'EQUA-Update-Checker', 'Accept': 'application/vnd.github.v3+json'}
-            )
-            with urllib.request.urlopen(req, timeout=10) as response:
-                if response.status == 200:
-                    releases = json.loads(response.read().decode('utf-8'))
-                    if releases:  # リリースのリストが空でないことを確認
-                        latest_release = releases[0]  # 最初の要素が最新のリリース
-                        latest_version = latest_release.get('tag_name', '')
-                        release_url = latest_release.get('html_url', '')
-                        asset_url = ""
-                        # OSに応じたアセットを探す
-                        asset_pattern = None
-                        if sys.platform == 'win32':
-                            # ポータブル版のzipファイルを探す
-                            asset_pattern = re.compile(r'EQUA_portable_.*\.zip$', re.IGNORECASE)
-                        # 他のOS用のアセットも必要ならここに追加
-
-                        for asset in latest_release.get('assets', []):
-                            if asset_pattern and asset_pattern.search(asset.get('name', '')):
-                                asset_url = asset.get('browser_download_url')
-                                break # 最初に見つかったものを採用
-                        self.finished.emit(True, latest_version, release_url, asset_url, "")
-                    else: # リリースが一つもない場合
-                        self.finished.emit(True, "", "", "", "") # 成功として扱うが、バージョン情報なし
-                else:
-                    self.finished.emit(False, "", "", "", f"サーバーエラー: {response.status}\nURL: {url}")
-        except Exception as e:
-            # エラーメッセージに、どのURLで失敗したかを含める
-            url_for_error = f"https://api.github.com/repos/{self.owner}/{self.repo}/releases"
-            self.finished.emit(False, "", "", "", f"{e}\nURL: {url_for_error}")
+# ==============================================================================================================================================================
+# UI/Color
 
 # ダークテーマのスタイルシート (Nord)
 DARK_STYLESHEET = """ 
@@ -825,20 +801,13 @@ THEMES = {
     "ライト": LIGHT_STYLESHEET,
 }
 
+# ==============================================================================================================================================================
+# Core/Tabs
+
 SEARCH_ENGINES = {
     "Google": "https://www.google.com/search?q={}",
     "Bing": "https://www.bing.com/search?q={}",
     "DuckDuckGo": "https://duckduckgo.com/?q={}",
-    "Yahoo Japan": "https://search.yahoo.co.jp/search?p={}",
-    "Yandex": "https://yandex.com/search/?text={}",
-    "Perplexity": "https://www.perplexity.ai/search?q={}",
-    "Baidu": "https://www.baidu.com/s?wd={}",
-    "Startpage": "https://www.startpage.com/do/dsearch?query={}",
-    "Naver": "https://search.naver.com/search.naver?query={}",
-    "Ecosia": "https://www.ecosia.org/search?q={}",
-    "Seznam": "https://search.seznam.cz/?q={}",
-    "Lilo": "https://search.lilo.org/searchweb.php?query={}",
-    "Mojeek": "https://www.mojeek.com/search?q={}",
 }
 
 class HorizontalTextTabStyle(QProxyStyle):
@@ -879,11 +848,8 @@ class HorizontalTextTabStyle(QProxyStyle):
 
         super().drawControl(element, option, painter, widget)
 
-def get_windows_theme(): # Windowsのみ対応
-    """Windowsの個人設定からアプリのテーマ（ライト/ダーク）を取得する"""
-    # ポータブル化のため、レジストリの読み取りを無効化し、常にダークをデフォルトとする。
-    # テーマはsettings.iniで管理される。
-    return "ダーク"
+# ==============================================================================================================================================================
+# Feather/Bookmark
 
 # ブックマークHTML解析用クラス (HTMLParserを継承)
 class BookmarkHTMLParser(HTMLParser):
@@ -1084,6 +1050,9 @@ class BookmarkWindow(QDialog):
         """エクスポート処理を親ウィンドウに依頼する"""
         self.parent.export_bookmarks()
 
+# ==============================================================================================================================================================
+# Feather/History
+
 # 履歴ウィンドウクラス
 class HistoryWindow(QDialog):
     def __init__(self, parent=None):
@@ -1162,6 +1131,9 @@ class HistoryWindow(QDialog):
             self.parent.add_new_tab(QUrl(url))
             self.accept()
 
+# ==============================================================================================================================================================
+# Core/CondigGUI
+
 # 設定ダイアログクラス
 class SettingsDialog(QDialog):
     def __init__(self, parent=None):
@@ -1239,7 +1211,7 @@ class SettingsDialog(QDialog):
         self.pages_widget.addWidget(self.create_ad_block_page())
 
         # このEQUAについて
-        self.categories_widget.addItem(QListWidgetItem(qta.icon('fa5s.info-circle'), "このEQUAについて"))
+        self.categories_widget.addItem(QListWidgetItem(qta.icon('fa5s.info-circle'), "About"))
         self.pages_widget.addWidget(self.create_about_page())
 
     def create_about_page(self):
@@ -1253,13 +1225,13 @@ class SettingsDialog(QDialog):
         
         # アプリアイコン
         app_icon_label = QLabel()
-        icon_pixmap = QPixmap(resource_path('equa.ico')).scaled(QSize(80, 80), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        icon_pixmap = QPixmap(resource_path('software.ico')).scaled(QSize(80, 80), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         app_icon_label.setPixmap(icon_pixmap)
         app_icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(app_icon_label)
 
         # アプリ名とバージョン
-        title_label = QLabel("EQUA")
+        title_label = QLabel("VELA <p style='color: red;'>注意！Alpha版です")
         title_font = title_label.font()
         title_font.setPointSize(22)
         title_font.setBold(True)
@@ -1274,7 +1246,7 @@ class SettingsDialog(QDialog):
         layout.addSpacing(20)
 
         # 開発者情報
-        dev_label = QLabel("開発者: StudioNosa (猫星　吹恋)")
+        dev_label = QLabel("開発者: ABATBeliever")
         dev_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(dev_label)
 
@@ -1309,8 +1281,8 @@ class SettingsDialog(QDialog):
         license_group = QGroupBox("ライセンス")
         license_layout = QVBoxLayout(license_group)
         license_label = QLabel(
-            'このアプリケーションは <b>GNU General Public License v3.0</b> の下で配布されています。<br>'
-            f'<a href="https://www.gnu.org/licenses/gpl-3.0.html" style="color: {link_color};">ライセンス条文はこちら</a>'
+            'このアプリケーションは <a href="https://www.gnu.org/licenses/gpl-3.0.html" style="color: red;">GNU General Public License v3.0</a> の下で配布されています。<br>'
+            f'また、StudioNOSA(猫星氏)の<a href="https://github.com/Keychrom/Project-EQUA-Portable" style="color: red;">EQUA-Portableプロジェクト</a>のフォークです'
         )
         license_label.setOpenExternalLinks(True)
         license_label.setWordWrap(True)
@@ -1345,10 +1317,10 @@ class SettingsDialog(QDialog):
 
         # タブの表示位置設定
         tab_pos_layout = QHBoxLayout()
-        tab_pos_label = QLabel("タブの表示位置:")
+        tab_pos_label = QLabel("タブの表示位置(変更には再起動が必要なことがあります):")
         self.tab_pos_combo = QComboBox()
         self.tab_pos_combo.addItems(["上", "下", "左", "右"])
-        current_tab_pos = self.parent.settings.value("tab_position", "上")
+        current_tab_pos = self.parent.settings.value("tab_position", "左")
         self.tab_pos_combo.setCurrentText(current_tab_pos)
         self.tab_pos_combo.currentTextChanged.connect(self.parent.change_tab_position)
         tab_pos_layout.addWidget(tab_pos_label)
@@ -1366,7 +1338,7 @@ class SettingsDialog(QDialog):
         search_engine_label = QLabel("デフォルトの検索エンジン:")
         self.search_engine_combo = QComboBox()
         self.search_engine_combo.addItems(SEARCH_ENGINES.keys())
-        current_search_engine = self.parent.settings.value("search_engine", "Google")
+        current_search_engine = self.parent.settings.value("search_engine", "Bing")
         self.search_engine_combo.setCurrentText(current_search_engine)
         self.search_engine_combo.currentTextChanged.connect(self.parent.change_search_engine)
         search_engine_layout.addWidget(search_engine_label)
@@ -1381,32 +1353,32 @@ class SettingsDialog(QDialog):
         startup_layout.addLayout(url_layout)
 
         # アップデートチェック設定
-        self.update_check_checkbox = QCheckBox("起動時にアップデートを確認する")
-        self.update_check_checkbox.setChecked(self.parent.settings.value("update_check_enabled", True, type=bool))
-        self.update_check_checkbox.toggled.connect(self.toggle_update_check)
-        startup_layout.addWidget(self.update_check_checkbox)
+#        self.update_check_checkbox = QCheckBox("起動時にアップデートを確認する")
+#        self.update_check_checkbox.setChecked(self.parent.settings.value("update_check_enabled", True, type=bool))
+#        self.update_check_checkbox.toggled.connect(self.toggle_update_check)
+#        startup_layout.addWidget(self.update_check_checkbox)
 
+        save_button = QPushButton("URLを保存")
+        save_button.clicked.connect(self.save_general_settings)
+        startup_layout.addWidget(save_button, alignment=Qt.AlignmentFlag.AlignRight)
+        
         # セッション復元設定
-        self.session_restore_checkbox = QCheckBox("起動時に前回のセッションを復元する")
+        self.session_restore_checkbox = QCheckBox("起動時に前回のタブを復元する")
         self.session_restore_checkbox.setChecked(self.parent.settings.value("session_restore_enabled", True, type=bool))
         self.session_restore_checkbox.toggled.connect(self.toggle_session_restore)
         startup_layout.addWidget(self.session_restore_checkbox)
 
         # ウィンドウサイズ復元設定
-        self.window_geometry_restore_checkbox = QCheckBox("終了時のウィンドウサイズと位置を記憶する")
+        self.window_geometry_restore_checkbox = QCheckBox("起動時に前回のウィンドウサイズ・位置を復元する")
         self.window_geometry_restore_checkbox.setChecked(self.parent.settings.value("window_geometry_restore_enabled", True, type=bool))
         self.window_geometry_restore_checkbox.toggled.connect(self.toggle_window_geometry_restore)
         startup_layout.addWidget(self.window_geometry_restore_checkbox)
 
         # ハードウェアアクセラレーション設定
-        self.hw_accel_checkbox = QCheckBox("ハードウェアアクセラレーションを有効にする (要再起動)")
+        self.hw_accel_checkbox = QCheckBox("ハードウェアアクセラレーション")
         self.hw_accel_checkbox.setChecked(self.parent.settings.value("hw_accel_enabled", True, type=bool))
         self.hw_accel_checkbox.toggled.connect(self.toggle_hw_accel)
         startup_layout.addWidget(self.hw_accel_checkbox)
-
-        save_button = QPushButton("URLを保存")
-        save_button.clicked.connect(self.save_general_settings)
-        startup_layout.addWidget(save_button, alignment=Qt.AlignmentFlag.AlignRight)
         
         layout.addWidget(startup_group)
 
@@ -1456,10 +1428,10 @@ class SettingsDialog(QDialog):
         # Qt 6.2以降で利用可能なサードパーティCookieブロックオプションを確認
         if hasattr(QWebEngineProfile.PersistentCookiesPolicy, 'BlockThirdPartyCookies'):
             self.cookie_policies.append(
-                ("サードパーティのCookieをブロックする", QWebEngineProfile.PersistentCookiesPolicy.BlockThirdPartyCookies)
+                ("Thirdpartyを拒否", QWebEngineProfile.PersistentCookiesPolicy.BlockThirdPartyCookies)
             )
         self.cookie_policies.append(
-            ("すべての永続Cookieをブロックする", QWebEngineProfile.PersistentCookiesPolicy.NoPersistentCookies)
+            ("すべての永続Cookieを拒否", QWebEngineProfile.PersistentCookiesPolicy.NoPersistentCookies)
         )
 
         self.cookie_policy_combo.addItems([item[0] for item in self.cookie_policies])
@@ -1607,7 +1579,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(update_group)
 
         # リスト管理
-        list_group = QGroupBox("ブロックするドメインのリスト")
+        list_group = QGroupBox("その他でブロックするリスト")
         list_layout = QVBoxLayout(list_group)
         list_layout.setSpacing(10)
         self.block_list_widget = QListWidget()
@@ -1859,89 +1831,8 @@ class SettingsDialog(QDialog):
             if success: QMessageBox.information(self, "成功", message)
             else: QMessageBox.critical(self, "更新失敗", message)
 
-# アップデートファイルダウンロード用スレッド
-class UpdateDownloadThread(QThread):
-    # シグナル: (受信済みバイト数, 全体バイト数), (成功/失敗, 保存パス, エラーメッセージ)
-    progress = pyqtSignal(int, int)
-    finished = pyqtSignal(bool, str, str)  # success, downloaded_path, error_message
-
-    def __init__(self, url, save_path, parent=None):
-        super().__init__(parent)
-        self.url = url
-        self.save_path = save_path
-        self._is_cancelled = False
-
-    # スレッドのメイン処理
-    def run(self):
-        try:
-            req = urllib.request.Request(self.url, headers={'User-Agent': 'EQUA-Update-Downloader'})
-            with urllib.request.urlopen(req, timeout=10) as response:
-                total_size = int(response.getheader('Content-Length', 0))
-                bytes_received = 0
-                chunk_size = 8192
-                with open(self.save_path, 'wb') as f:
-                    while True:
-                        if self._is_cancelled:
-                            self.finished.emit(False, "", "ダウンロードがキャンセルされました。")
-                            return
-                        chunk = response.read(chunk_size)
-                        if not chunk:
-                            break
-                        f.write(chunk)
-                        bytes_received += len(chunk)
-                        self.progress.emit(bytes_received, total_size)
-            self.finished.emit(True, self.save_path, "")
-        except Exception as e:
-            self.finished.emit(False, "", str(e))
-
-    def cancel(self):
-        """ダウンロードをキャンセルする"""
-        self._is_cancelled = True
-
-# アップデートダウンロードダイアログ
-class UpdateDownloadDialog(QDialog):
-    # シグナル: (成功/失敗, 保存パス)
-    download_finished = pyqtSignal(bool, str) # success, downloaded_path
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("アップデートをダウンロード中")
-        self.setModal(True)
-        self.setFixedSize(400, 120)
-        # UIの構築
-        layout = QVBoxLayout(self)
-        self.label = QLabel("新しいバージョンをダウンロードしています...")
-        self.progress_bar = QProgressBar()
-        self.progress_label = QLabel("0 MB / 0 MB")
-        self.cancel_button = QPushButton("キャンセル")
-        self.cancel_button.clicked.connect(self.cancel_download)
-
-        layout.addWidget(self.label)
-        layout.addWidget(self.progress_bar)
-        layout.addWidget(self.progress_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.cancel_button, alignment=Qt.AlignmentFlag.AlignRight)
-
-    def start_download(self, url, save_path):
-        """ダウンロードスレッドを開始する"""
-        self.download_thread = UpdateDownloadThread(url, save_path)
-        self.download_thread.progress.connect(self.update_progress)
-        self.download_thread.finished.connect(self.on_finished)
-        self.download_thread.start()
-
-    def update_progress(self, received, total):
-        self.progress_bar.setMaximum(total)
-        self.progress_bar.setValue(received)
-        self.progress_label.setText(f"{received/1024/1024:.1f} MB / {total/1024/1024:.1f} MB")
-
-    def on_finished(self, success, path, error_message):
-        self.download_finished.emit(success, path)
-        # ダイアログを閉じる
-        self.accept()
-
-    def cancel_download(self):
-        if hasattr(self, 'download_thread') and self.download_thread.isRunning():
-            # 実行中のスレッドにキャンセルを要求
-            self.download_thread.cancel()
+# ==============================================================================================================================================================
+# UI/DownloadWidgets
 
 # ダウンロード項目ウィジェットクラス
 class DownloadItemWidget(QWidget):
@@ -2067,6 +1958,9 @@ class DownloadManager(QDialog):
         self.hide()
         event.ignore()
 
+# ==============================================================================================================================================================
+# Core/Browser
+
 # メインブラウザウィンドウクラス
 class BrowserWindow(QMainWindow):
     # シグナル: 広告ブロックリストの更新が完了したときに (成功/失敗, メッセージ) を送信
@@ -2090,12 +1984,12 @@ class BrowserWindow(QMainWindow):
 
         # SPA遷移用の擬似プログレスバータイマー
         self._spa_progress_timer = QTimer(self)
-        self._spa_progress_timer.setInterval(50)  # 50msごとに更新
+        self._spa_progress_timer.setInterval(10)  # 50msごとに更新
         self._spa_progress_timer.timeout.connect(self._update_spa_progress)
         self.update_thread = None
         self.fullscreen_request = None # 全画面リクエストを保持
 
-        self.setWindowTitle("EQUA - ウェブ閲覧と使いやすさのHybrid")
+        self.setWindowTitle("VELA Browser")
         self.setGeometry(100, 100, 1024, 768)
         
         # アプリケーションデータディレクトリのパスを取得
@@ -2115,7 +2009,7 @@ class BrowserWindow(QMainWindow):
         # ウィンドウへのファイルのドラッグ＆ドロップを有効化
         self.setAcceptDrops(True)
 
-        self.default_new_tab_url = self.settings.value("default_new_tab_url", "https://www.google.com")
+        self.default_new_tab_url = self.settings.value("default_new_tab_url", "https://www.msn.com/ja-jp")
 
         # 履歴DBとブックマークのファイルパスを初期化
         self.history_db_path = os.path.join(self.data_path, "history.sqlite")
@@ -2143,7 +2037,7 @@ class BrowserWindow(QMainWindow):
         self.tabs.tabBar().setElideMode(Qt.TextElideMode.ElideRight)
 
         # 起動時に保存されたタブの表示位置を適用
-        position_name = self.settings.value("tab_position", "上")
+        position_name = self.settings.value("tab_position", "左")
         position_map = {
             "左": QTabWidget.TabPosition.West,
             "右": QTabWidget.TabPosition.East,
@@ -2200,22 +2094,11 @@ class BrowserWindow(QMainWindow):
         self.new_tab_button.clicked.connect(lambda: self.add_new_tab())
         navigation_layout.addWidget(self.new_tab_button)
 
-        # アドレスバーを作成
-        self.url_bar = QLineEdit()
-        self.url_bar.returnPressed.connect(self.navigate_to_url)
-        self.url_bar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        navigation_layout.addWidget(self.url_bar)
-
         # ハンバーガーメニューボタン
         self.menu_button = QPushButton()
         self.menu_button.setIcon(qta.icon('fa5s.bars', color='#D8DEE9'))
         self.menu_button.setToolTip("メニュー")
         main_menu = QMenu(self) # メニューボタンに表示するメニューを作成
-
-        # 新しいタブ アクション
-        new_tab_action = QAction(qta.icon('fa5s.plus'), "新しいタブ", self)
-        new_tab_action.triggered.connect(lambda: self.add_new_tab())
-        main_menu.addAction(new_tab_action)
 
         # ファイルを開く アクション
         self.open_file_action = QAction(qta.icon('fa5s.folder-open'), "ファイルを開く...", self)
@@ -2224,7 +2107,7 @@ class BrowserWindow(QMainWindow):
 
         # 通常モードの場合のみ「新しいプライベートウィンドウ」を追加
         if not self.is_private:
-            private_window_action = QAction(qta.icon('fa5s.user-secret'), "新しいプライベートウィンドウを開く", self)
+            private_window_action = QAction(qta.icon('fa5s.user-secret'), "プライベートウィンドウ...", self)
             private_window_action.triggered.connect(self.open_private_window)
             main_menu.addAction(private_window_action)
         
@@ -2255,12 +2138,18 @@ class BrowserWindow(QMainWindow):
         main_menu.addSeparator()
 
         # アップデート確認アクション
-        self.update_action = QAction("アップデートを確認", self)
-        self.update_action.triggered.connect(self.manual_check_for_updates)
-        main_menu.addAction(self.update_action)
+#        self.update_action = QAction("アップデートを確認", self)
+#        self.update_action.triggered.connect(self.manual_check_for_updates)
+#        main_menu.addAction(self.update_action)
 
         self.menu_button.setMenu(main_menu)
         navigation_layout.addWidget(self.menu_button)
+        
+        # アドレスバーを作成
+        self.url_bar = QLineEdit()
+        self.url_bar.returnPressed.connect(self.navigate_to_url)
+        self.url_bar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        navigation_layout.addWidget(self.url_bar)
         
         # QToolBarを作成し、そこにナビゲーションウィジェットを追加
         self.navigation_bar = self.addToolBar("ナビゲーション")
@@ -2307,13 +2196,6 @@ class BrowserWindow(QMainWindow):
         # プライベートモードのUI設定
         if self.is_private:
             self.setWindowTitle(f"{self.windowTitle()} (プライベート)")
-
-        # 起動時にアップデートをチェック (通常ウィンドウのみ)
-        if not self.is_private:
-            # update_check_threadをインスタンス変数として保持しないとGCされる可能性がある
-            self.update_check_thread = None
-            if self.settings.value("update_check_enabled", True, type=bool):
-                self.check_for_updates()
         
         # ウィンドウサイズと位置を復元 (通常ウィンドウのみ)
         if not self.is_private and self.settings.value("window_geometry_restore_enabled", True, type=bool):
@@ -2470,7 +2352,9 @@ class BrowserWindow(QMainWindow):
         page.loadStarted.connect(lambda browser=browser: self.handle_load_started(browser))
         page.loadProgress.connect(lambda progress, browser=browser: self.handle_load_progress(progress, browser))
         page.loadFinished.connect(lambda ok, browser=browser: self.handle_load_finished(ok, browser))
-
+        
+        if len(label) > 10:
+            label= label[:limit] + "..."
         i = self.tabs.addTab(browser, label) # タブウィジェットに追加
         if set_as_current:
             self.tabs.setCurrentIndex(i)
@@ -2589,7 +2473,8 @@ class BrowserWindow(QMainWindow):
             # URLバーとウィンドウタイトルを更新
             self.url_bar.setText(current_browser.url().toString())
             self.url_bar.setCursorPosition(0)
-            self.setWindowTitle(f"{current_browser.title()} - EQUA" if current_browser.title() else "EQUA - ウェブ閲覧と使いやすさのHybrid")
+            label = current_browser.title()
+            self.setWindowTitle(f"{label} - VELA" if current_browser.title() else "VELA")
             self.back_button.setEnabled(current_browser.page().history().canGoBack())
             self.forward_button.setEnabled(current_browser.page().history().canGoForward())
             # プログレスバーの状態を更新
@@ -2597,7 +2482,7 @@ class BrowserWindow(QMainWindow):
             self.update_progress_bar(progress if progress is not None and progress < 100 else 100)
         else:
             self.url_bar.setText("")
-            self.setWindowTitle("EQUA - ウェブ閲覧と使いやすさのHybrid")
+            self.setWindowTitle("VELA")
             self.back_button.setEnabled(False)
             self.forward_button.setEnabled(False)
             self.update_progress_bar(100) # プログレスバーをリセット
@@ -2738,8 +2623,11 @@ class BrowserWindow(QMainWindow):
         file_filter = "ウェブページとPDF (*.html *.htm *.pdf);;すべてのファイル (*.*)"
         path, _ = QFileDialog.getOpenFileName(self, "ファイルを開く", home_dir, file_filter)
 
-        if path:
+        if not path.endswith(".pdf"):
             self.add_new_tab(QUrl.fromLocalFile(path))
+        else:
+            self.add_new_tab(QUrl.fromLocalFile("about:blank"))
+
 
     def open_dev_tools(self, index):
         """指定されたタブの開発者ツールを開く"""
@@ -3114,9 +3002,7 @@ class BrowserWindow(QMainWindow):
 
     def update_theme_colors(self):
         """現在のテーマ設定に基づいて色の辞書を更新する"""
-        theme = self.settings.value("theme", "自動") # 設定からテーマ名を取得
-        if theme == "自動":
-            theme = get_windows_theme()
+        theme = self.settings.value("theme", "ダーク") # 設定からテーマ名を取得
         if theme == "ライト":
             self.theme_colors = {
                 "icon_color": "#4C566A",
@@ -3155,7 +3041,7 @@ class BrowserWindow(QMainWindow):
         # メニュー内のアイコン
         if hasattr(self, 'open_file_action'):
             self.open_file_action.setIcon(qta.icon('fa5s.folder-open', color=icon_color))
-        self.update_action.setIcon(qta.icon('fa5s.sync-alt', color=icon_color))
+#        self.update_action.setIcon(qta.icon('fa5s.sync-alt', color=icon_color))
 
         # 全てのタブのアイコンを更新
         for i in range(self.tabs.count()):
@@ -3234,101 +3120,6 @@ class BrowserWindow(QMainWindow):
         
         # 設定ダイアログに結果を通知 (silentがTrueの場合は空メッセージ)
         self.blocklist_update_finished.emit(success, message)
-
-    def check_for_updates(self):
-        """アプリケーションのアップデートを非同期でチェックする"""
-        self.update_check_thread = UpdateCheckThread(GITHUB_REPO_OWNER, GITHUB_REPO_NAME)
-        self.update_check_thread.finished.connect(self.on_update_check_finished)
-        self.update_check_thread.start()
-
-    def on_update_check_finished(self, success, latest_version, release_url, asset_url, error_message):
-        """アップデートチェック完了時の処理"""
-        if not success:
-            print(f"アップデートチェックに失敗しました: {error_message}")
-            return
-
-        if not latest_version or not release_url:
-            print("アップデート情報の取得に失敗しました: バージョンまたはURLが空です。")
-            return
-
-        try:
-            # packaging.versionを使って、セマンティックバージョニングに沿った堅牢な比較を行う
-            if parse_version(latest_version) > parse_version(__version__):
-                self.show_update_notification(latest_version, release_url, asset_url)
-        except InvalidVersion as e:
-            print(f"バージョン番号の比較に失敗しました: current='{__version__}', latest='{latest_version}', error: {e}")
-
-    def show_update_notification(self, new_version, release_url, asset_url):
-        """アップデート通知のメッセージボックスを表示する"""
-        msg_box = QMessageBox(self)
-        msg_box.setIcon(QMessageBox.Icon.Information)
-        msg_box.setWindowTitle("アップデートのお知らせ")
-        msg_box.setText(f"新しいバージョン {new_version} が利用可能です。")
-        msg_box.setInformativeText("今すぐダウンロードしてアップデートしますか？")
-        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        msg_box.setDefaultButton(QMessageBox.StandardButton.Yes)
-        if msg_box.exec() == QMessageBox.StandardButton.Yes:
-            if asset_url: # OSに対応するアセットが見つかっていた場合
-                self.start_update_download(asset_url)
-            else:
-                QMessageBox.warning(self, "エラー", "アップデート用のファイルが見つかりませんでした。ダウンロードページを開きます。")
-                QDesktopServices.openUrl(QUrl(release_url))
-
-    def start_update_download(self, asset_url):
-        """アップデートファイルのダウンロードを開始する"""
-        if self.update_download_dialog and self.update_download_dialog.isVisible():
-            return
-
-        # ダウンロードするファイル名を取得
-        filename = os.path.basename(urllib.parse.urlparse(asset_url).path)
-
-        # アップデートファイルは "downloads" フォルダに保存する
-        save_dir = self.settings.value("download_path", os.path.join(PORTABLE_BASE_PATH, "downloads"))
-        save_path = os.path.join(save_dir, filename)
-
-        self.update_download_dialog = UpdateDownloadDialog(self)
-        self.update_download_dialog.download_finished.connect(self.on_update_download_finished) # ダウンロード完了シグナルを接続
-        self.update_download_dialog.start_download(asset_url, save_path)
-        self.update_download_dialog.exec()
-
-    def on_update_download_finished(self, success, downloaded_path):
-        """アップデートファイルのダウンロード完了後の処理"""
-        if success:
-            QMessageBox.information(self, "ダウンロード完了",
-                                    "アップデートファイルのダウンロードが完了しました。\n\n"
-                                    "アプリケーションを終了し、ダウンロードしたzipファイルを展開して、"
-                                    "既存のファイルを上書きしてください。\n\n"
-                                    "ダウンロード先フォルダを開きます。")
-            download_folder = os.path.dirname(downloaded_path)
-            QDesktopServices.openUrl(QUrl.fromLocalFile(download_folder))
-        else:
-            QMessageBox.critical(self, "アップデート失敗", "ダウンロードに失敗しました。")
-
-    def manual_check_for_updates(self):
-        """手動でアップデートを確認する"""
-        # update_check_threadをインスタンス変数として保持しないとGCされる可能性がある
-        self.update_check_thread = UpdateCheckThread(GITHUB_REPO_OWNER, GITHUB_REPO_NAME)
-        self.update_check_thread.finished.connect(self.on_manual_update_check_finished)
-        self.update_check_thread.start()
-
-    def on_manual_update_check_finished(self, success, latest_version, release_url, asset_url, error_message):
-        """手動アップデートチェック完了時の処理"""
-        if not success:
-            QMessageBox.warning(self, "アップデート確認", f"アップデートの確認に失敗しました。\n\nエラー: {error_message}")
-            return
-
-        if not latest_version or not release_url:
-            QMessageBox.warning(self, "アップデート確認", "アップデート情報の取得に失敗しました。")
-            return
-
-        try:
-            # packaging.versionを使って堅牢なバージョン比較を行う
-            if latest_version and parse_version(latest_version) > parse_version(__version__):
-                self.show_update_notification(latest_version, release_url, asset_url)
-            else:
-                QMessageBox.information(self, "アップデート確認", "お使いのバージョンは最新です。")
-        except InvalidVersion as e:
-            QMessageBox.critical(self, "エラー", f"バージョン番号の比較に失敗しました。\n\nエラー: {e}")
 
     # --- ページ読み込みプログレスバー関連のハンドラ ---
     def handle_load_started(self, browser):
@@ -3413,7 +3204,7 @@ def cleanup_before_quit():
 
 def apply_cookie_policy():
     """アプリケーション全体のCookieポリシーを設定から読み込んで適用する"""
-    settings = QSettings("StudioNosa", "EQUA")
+    settings = QSettings("VELABrowser", "ProfileAlpha1")
     # 保存されたenumの値を取得。デフォルトはAllowPersistentCookies
     default_policy_value = QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies.value
     policy_value = settings.value("privacy/cookie_policy_value", default_policy_value, type=int)
@@ -3434,7 +3225,7 @@ def apply_application_theme(theme_name):
     """アプリケーション全体にテーマを適用する"""
     actual_theme_name = theme_name if theme_name != "自動" else "ダーク"
     if theme_name == "自動": # 「自動」の場合はOSのテーマを取得
-        actual_theme_name = get_windows_theme()
+        theme_name = "ダーク"
 
     # アプリケーションインスタンスにスタイルシートを適用
     QApplication.instance().setStyleSheet(THEMES.get(actual_theme_name, DARK_STYLESHEET))
@@ -3448,8 +3239,8 @@ def apply_application_theme(theme_name):
 
 def apply_tab_position():
     """全ウィンドウのタブ表示位置を更新する"""
-    settings = QSettings("StudioNosa", "EQUA")
-    position_name = settings.value("tab_position", "上")
+    settings = QSettings("VELABrowser", "ProfileAlpha1")
+    position_name = settings.value("tab_position", "左")
 
     position_map = {
         "左": QTabWidget.TabPosition.West,
@@ -3481,9 +3272,9 @@ if __name__ == '__main__':
 
     # QApplicationインスタンスを作成
     app = QApplication(sys.argv) 
-    app.setApplicationName("EQUA")
-    app.setOrganizationName("StudioNosa")
-    app.setWindowIcon(QIcon(resource_path('equa.ico')))
+    app.setApplicationName("ProfileAlpha1")
+    app.setOrganizationName("VELABrowser")
+    app.setWindowIcon(QIcon(resource_path('software.ico')))
 
     # 垂直タブのテキストを水平に描画するカスタムスタイルを適用
     # OSネイティブのスタイルに依存しないように、Fusionスタイルをベースにする
