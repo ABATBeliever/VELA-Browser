@@ -1,0 +1,34 @@
+VELA 開発マニュアル for Linux
+
+<前提条件>
+以下の環境での開発を前提とします
+・Lubuntu 24.04 LTS
+・Python 3.12.3 GCC13.3.0
+・Oracle VM Virtualbox
+
+<依存関係の入手>
+sudo apt install fonts-ipaexfont
+sudo apt install mousepad
+sudo apt install fcitx5 fcitx5-mozc fcitx5-config-qt fcitx5-configtool
+sudo apt-get install -y libxcb-xinerama0 libxcb-cursor0
+sudo apt install python3-pip
+sudo apt install python3.12-venv
+sudo apt install patchelf
+※mousepadは "IPAGotthic Regularの10サイズ" を推奨します
+※mousepadでのコーディングを強く推奨します
+
+<コードの入手>
+git clone https://github.com/ABATBeliever/VELA-Browser
+
+<開発環境の準備>
+・python3 -m venv VELADev
+・source ./VELADev/bin/activate
+・pip install qtawesome PyQt6 PyQt6-WebEngine
+・pip install pyinstaller appimage-builder
+
+<実行方法>
+・python3 Software.py
+
+<ビルド方法>
+・pyinstaller --clean -F Software.py
+・distフォルダに生成される

@@ -1,0 +1,32 @@
+VELA 開発マニュアル for RaspberryPi
+
+<前提条件>
+以下の環境での開発を前提とします
+・RaspberryPi 4B
+・RaspberryPi OS Bookworm aarch64 (64ビット版)
+・メモリ4GB以上
+
+<依存関係の入手>
+・sudo apt install fcitx5 fcitx5-mozc fcitx5-config-qt fcitx5-configtool
+・sudo apt install libwebp7 libtiff6
+・sudo ln -s /usr/lib/aarch64-linux-gnu/libwebp.so.7 /usr/lib/aarch64-linux-gnu/libwebp.so.6
+・sudo ln -s /usr/lib/aarch64-linux-gnu/libtiff.so.6 /usr/lib/aarch64-linux-gnu/libtiff.so.5
+
+<コードの入手>
+・git clone https://github.com/ABATBeliever/VELA-Browser
+
+<開発環境の準備>
+・python3 -m venv VELADev
+・source ./VELADev/bin/activate
+・pip install qtawesome
+・python -m pip install --upgrade pip setuptools wheel
+・pip install --only-binary=:all: PyQt6
+・pip install --only-binary=:all: PyQt6-WebEngine
+・pip install pyinstaller
+
+<実行方法>
+・python3 Software.py
+
+<ビルド方法>
+・pyinstaller --clean -F Software.py
+・distフォルダに生成される

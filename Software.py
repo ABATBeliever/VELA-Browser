@@ -11,11 +11,11 @@ print('                              VELA Browser')
 print('                   Vital Environment for Liberty Access')
 print('               2025 ABATBeliever. Forked From EQUA(Nekoboshi)')
 
-__version__       = "0.1.0"  # TODO: 現在のアプリケーションのバージョンに合わせてください
+__version__       = "0.2.0"  # TODO: 現在のアプリケーションのバージョンに合わせてください
 GITHUB_REPO_OWNER = "ABATBeliever"  # TODO: あなたのGitHubユーザー名またはオーガニゼーション名に置き換えてください
 GITHUB_REPO_NAME  = "VELA-Browser"  # TODO: あなたのGitHubリポジトリ名に置き換えてください
 
-print('*\nTHIS VERSION IS Alpha!\nLog:')
+print('*\nTHIS VERSION IS ', __version__, '[Alpha]!\nIf you want to save this log, you should open from command line.\n')
 
 # ==============================================================================================================================================================
 # Core/import
@@ -23,6 +23,7 @@ print('*\nTHIS VERSION IS Alpha!\nLog:')
 # 必要なモジュールをインポート
 import sys
 import os
+import platform
 import json
 import urllib.request
 import urllib.parse
@@ -48,6 +49,51 @@ from PyQt6.QtCore import QUrl, QSettings, Qt, QStandardPaths, QSize, QThread, py
 from PyQt6.QtGui import QIcon, QCloseEvent, QAction, QDesktopServices, QPixmap, QColor
 
 # ==============================================================================================================================================================
+# Core/System
+
+def _read_file(path):
+    try:
+        with open(path, 'rb') as f:
+            return f.read().decode('utf-8', errors='ignore')
+    except Exception:
+        return None
+
+def is_raspberry_pi():
+    dt = _read_file('/proc/device-tree/model')
+    if dt and 'raspberry' in dt.lower():
+        return True
+    cpuinfo = _read_file('/proc/cpuinfo')
+    if cpuinfo:
+        lower = cpuinfo.lower()
+        if 'raspberry pi' in lower or 'bcm2708' in lower or 'bcm2709' in lower or 'bcm2835' in lower or 'bcm2836' in lower or 'bcm2837' in lower or 'bcm2711' in lower:
+            return True
+        if 'model name' in lower and 'raspberry' in lower:
+            return True
+    osr = _read_file('/etc/os-release')
+    if osr and ('raspbian' in osr.lower() or 'raspios' in osr.lower() or 'raspberry' in osr.lower()):
+        return True
+    machine = platform.uname().machine.lower()
+    if machine.startswith('arm') or 'aarch64' in machine:
+        return False
+    return False
+
+def detect_os():
+    system = platform.system().lower()
+    if 'windows' in system:
+        return 'Windows'
+    if 'linux' in system:
+        if is_raspberry_pi():
+            return 'Raspberry Pi'
+        else:
+            return 'Linux'
+    return platform.system()
+
+if __name__ == '__main__':
+    print('Type:', detect_os(), platform.uname().machine)
+    print('IsRaspberryPi:', is_raspberry_pi())
+    print('\n')
+
+# ==============================================================================================================================================================
 # Core/Settings
 
 # --- ポータブル化対応 ---
@@ -60,6 +106,7 @@ def get_portable_base_path():
     return os.path.dirname(os.path.abspath(__file__))
 
 PORTABLE_BASE_PATH = get_portable_base_path()
+print('BASE_PATH:', get_portable_base_path())
 
 # PyInstallerで作成されたexeファイル内でリソースファイル（アイコンなど）のパスを解決するためのヘルパー関数
 def resource_path(relative_path):
@@ -84,6 +131,7 @@ persistent_profile = None # Cookieやキャッシュなどを保持するプロ�
 SETTINGS_FILE_NAME = "settings.ini"
 DATA_DIR_NAME = "data"
 DEFAULT_ADBLOCK_LIST_URL = "https://easylist.to/easylist/easylist.txt"
+UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 # ==============================================================================================================================================================
 # Feather/Adblock
@@ -180,10 +228,13 @@ class UpdateBlocklistThread(QThread):
                 if response.status == 200:
                     content = response.read().decode('utf-8', errors='ignore')
                     self.finished.emit(True, content, "") # 成功シグナルを送信
+                    print('[UpdateBlocklistThread] Finish')
                 else:
                     self.finished.emit(False, "", f"サーバーエラー: {response.status}") # 失敗シグナルを送信
+                    print('[UpdateBlocklistThread] ERR {response.status}')
         except Exception as e:
             self.finished.emit(False, "", str(e)) # 例外発生時に失敗シグナルを送信
+            print('[UpdateBlocklistThread] Exception')
 
 # ==============================================================================================================================================================
 # UI/Color
@@ -1231,7 +1282,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(app_icon_label)
 
         # アプリ名とバージョン
-        title_label = QLabel("VELA <p style='color: red;'>注意！Alpha版です")
+        title_label = QLabel("<p>VELA <p style='color: red;'>注意！Alpha版です</p></p>")
         title_font = title_label.font()
         title_font.setPointSize(22)
         title_font.setBold(True)
@@ -1351,12 +1402,6 @@ class SettingsDialog(QDialog):
         url_layout.addWidget(url_label)
         url_layout.addWidget(self.url_input)
         startup_layout.addLayout(url_layout)
-
-        # アップデートチェック設定
-#        self.update_check_checkbox = QCheckBox("起動時にアップデートを確認する")
-#        self.update_check_checkbox.setChecked(self.parent.settings.value("update_check_enabled", True, type=bool))
-#        self.update_check_checkbox.toggled.connect(self.toggle_update_check)
-#        startup_layout.addWidget(self.update_check_checkbox)
 
         save_button = QPushButton("URLを保存")
         save_button.clicked.connect(self.save_general_settings)
@@ -1896,9 +1941,11 @@ class DownloadItemWidget(QWidget):
             self.progress_bar.setMaximum(int(bytes_total))
             self.progress_bar.setValue(int(bytes_received))
             self.progress_label.setText(f"{bytes_received/1024/1024:.1f} / {bytes_total/1024/1024:.1f} MB")
+            print('[update_progress] {bytes_received/1024/1024:.1f} / {bytes_total/1024/1024:.1f} MB')
         else:
             self.progress_bar.setRange(0, 0) # 不定モード
             self.progress_label.setText(f"{bytes_received/1024/1024:.1f} MB")
+            print('[update_progress] {bytes_received/1024/1024:.1f} MB')
 
     def update_state(self, state):
         """ダウンロードの状態に応じてUIを更新する"""
@@ -2009,7 +2056,7 @@ class BrowserWindow(QMainWindow):
         # ウィンドウへのファイルのドラッグ＆ドロップを有効化
         self.setAcceptDrops(True)
 
-        self.default_new_tab_url = self.settings.value("default_new_tab_url", "https://www.msn.com/ja-jp")
+        self.default_new_tab_url = self.settings.value("default_new_tab_url", "https://start.duckduckgo.com/")
 
         # 履歴DBとブックマークのファイルパスを初期化
         self.history_db_path = os.path.join(self.data_path, "history.sqlite")
@@ -2177,14 +2224,17 @@ class BrowserWindow(QMainWindow):
             if urls:
                 for url in urls:
                     self.add_new_tab(QUrl(url), "読み込み中...")
+                    print('[Session Restore]',url)
                 # 最初のデフォルトタブが残っている場合は閉じる
                 if len(urls) > 0 and self.tabs.count() > len(urls): # 復元したタブの他に余分なタブがあれば
                      self.close_current_tab(0)
                 if 0 <= current_index < self.tabs.count():
                     self.tabs.setCurrentIndex(current_index)
+                print('[Session Restore] Closed')
             else:
                 # 復元するセッションがない場合はデフォルトページを開く
                 self.add_new_tab(QUrl(self.default_new_tab_url), "新しいタブ")
+                print('[Session Restore] Canceled')
         else:
             # プライベートモードまたは設定が無効な場合はデフォルトページを開く
             self.add_new_tab(QUrl(self.default_new_tab_url), "新しいタブ")
@@ -2195,6 +2245,7 @@ class BrowserWindow(QMainWindow):
 
         # プライベートモードのUI設定
         if self.is_private:
+            print('Private Mode Detected')
             self.setWindowTitle(f"{self.windowTitle()} (プライベート)")
         
         # ウィンドウサイズと位置を復元 (通常ウィンドウのみ)
@@ -2235,7 +2286,7 @@ class BrowserWindow(QMainWindow):
             """)
             conn.commit()
         except sqlite3.Error as e:
-            print(f"履歴データベースの初期化に失敗しました: {e}")
+            print(f"Failed to init HistoryDB: {e}")
         finally:
             if conn:
                 conn.close()
@@ -2287,7 +2338,7 @@ class BrowserWindow(QMainWindow):
             cursor.execute(query, (url_str, title_str, datetime.now().isoformat()))
             conn.commit()
         except sqlite3.Error as e:
-            print(f"履歴の更新に失敗しました: {e}")
+            print(f"Failed to add to HistoryDB: {e}")
         finally:
             if conn:
                 conn.close()
@@ -2309,7 +2360,7 @@ class BrowserWindow(QMainWindow):
             cursor.execute("DELETE FROM history")
             conn.commit()
         except sqlite3.Error as e:
-            print(f"履歴データベースのクリアに失敗しました: {e}")
+            print(f"Failed to clear HistoryDB: {e}")
         finally:
             if conn:
                 conn.close()
@@ -2331,7 +2382,8 @@ class BrowserWindow(QMainWindow):
 
         settings = browser.settings()
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
-        settings.setAttribute(QWebEngineSettings.WebAttribute.PdfViewerEnabled, True)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.PdfViewerEnabled, False)
+        print('PdfViewer Deactivated')
         settings.setAttribute(QWebEngineSettings.WebAttribute.FullScreenSupportEnabled, True)
         # JavaScript関連の設定を明示的に有効化。一部サイトのレンダリング問題を解決するため。
         settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, True)
@@ -2438,7 +2490,7 @@ class BrowserWindow(QMainWindow):
         if self._spa_progress_value >= 100:
             self._spa_progress_value = 100
             self._spa_progress_timer.stop()
-
+        print('ProgressBar:',self._spa_progress_value)
         self.update_progress_bar(self._spa_progress_value)
 
     def _start_spa_progress(self):
@@ -2496,6 +2548,7 @@ class BrowserWindow(QMainWindow):
         url_text = self.url_bar.text().strip()
         if not url_text:
             return
+        print('NAVIGATE TO URL\nTEXT:',url_text)
 
         # 入力されたテキストがURLか検索クエリかを判定するヒューリスティック
         # 1. ' 'を含まず'.'を含む (example.com)
@@ -2504,6 +2557,7 @@ class BrowserWindow(QMainWindow):
         is_url = (' ' not in url_text and '.' in url_text) or url_text.lower() == 'localhost'
         qurl = QUrl(url_text)
         if qurl.scheme():
+            print('Type: URL')
             is_url = True
 
         if is_url:
@@ -2511,9 +2565,10 @@ class BrowserWindow(QMainWindow):
                 qurl.setScheme("https")
             current_browser.setUrl(qurl)
         else:
+            print('Type: Query')
             # 検索クエリとして処理
-            search_engine_name = self.settings.value("search_engine", "Google")
-            search_url_template = SEARCH_ENGINES.get(search_engine_name, "https://www.google.com/search?q={}")
+            search_engine_name = self.settings.value("search_engine", "DuckDuckGo")
+            search_url_template = SEARCH_ENGINES.get(search_engine_name, "https://duckduckgo.com/?q={}")
             encoded_query = urllib.parse.quote_plus(url_text)
             search_url = search_url_template.format(encoded_query)
             current_browser.setUrl(QUrl(search_url))
@@ -2676,8 +2731,10 @@ class BrowserWindow(QMainWindow):
             pixmap = browser.grab()
             if pixmap.save(path):
                 QMessageBox.information(self, "成功", f"ページをキャプチャしました:\n{path}")
+                print('Captured Page: {path}')
             else:
                 QMessageBox.critical(self, "エラー", "キャプチャの保存に失敗しました。")
+                print('Capture Failed')
 
     def handle_rename_group_from_menu(self, old_name):
         """右クリックメニューからグループ名を変更するためのハンドラ"""
@@ -2908,6 +2965,7 @@ class BrowserWindow(QMainWindow):
         self.settings.setValue("search_engine", engine_name)
 
     def closeEvent(self, a0: QCloseEvent):
+        print('\n\ncloseEvent')
         """ウィンドウを閉じる際に履歴とブックマークを保存するイベントハンドラ"""
         # グローバルリストからこのウィンドウの参照を削除
         if self in windows:
@@ -2921,8 +2979,10 @@ class BrowserWindow(QMainWindow):
 
         # 通常モードの場合のみ各種情報を保存
         if not self.is_private:
+            print('Save Settings')
             # 終了時にデータを削除する設定が有効な場合
             if self.settings.value("privacy/clear_on_exit", False, type=bool):
+                print('Mode: Clear on exit')
                 self.clear_browsing_data()
                 # セッションやウィンドウサイズは保存しないので、保存済みの情報をクリア
                 self.settings.remove("session/urls")
@@ -2932,6 +2992,7 @@ class BrowserWindow(QMainWindow):
             else:
                 # 通常の保存処理
                 # ウィンドウのサイズと位置を保存
+                print('Mode: Normal')
                 if self.settings.value("window_geometry_restore_enabled", True, type=bool):
                     self.settings.setValue("windowGeometry", self.saveGeometry())
                     self.settings.setValue("windowState", self.saveState())
@@ -2940,9 +3001,9 @@ class BrowserWindow(QMainWindow):
                     urls = [self.tabs.widget(i).url().toString() for i in range(self.tabs.count())]
                     self.settings.setValue("session/urls", urls)
                     self.settings.setValue("session/current_index", self.tabs.currentIndex())
-
             self.save_bookmarks()
         super().closeEvent(a0)
+        print('\n*')
 
     def open_private_window(self):
         """新しいプライベートウィンドウを開く"""
@@ -3226,6 +3287,7 @@ def apply_application_theme(theme_name):
     actual_theme_name = theme_name if theme_name != "自動" else "ダーク"
     if theme_name == "自動": # 「自動」の場合はOSのテーマを取得
         theme_name = "ダーク"
+    print('[Apply_Application_Theme]', theme_name)
 
     # アプリケーションインスタンスにスタイルシートを適用
     QApplication.instance().setStyleSheet(THEMES.get(actual_theme_name, DARK_STYLESHEET))
@@ -3269,8 +3331,13 @@ if __name__ == '__main__':
         # 既存のフラグに追記する形にする
         existing_flags = os.environ.get("QTWEBENGINE_CHROMIUM_FLAGS", "")
         os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = f"{existing_flags} --disable-gpu".strip()
+    elif is_raspberry_pi():
+        print('Hardware Acceleration is Disabled because your PC is RaspberryPi')
+        existing_flags = os.environ.get("QTWEBENGINE_CHROMIUM_FLAGS", "")
+        os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = f"{existing_flags} --disable-gpu".strip()
 
     # QApplicationインスタンスを作成
+    print('\nCreating QApplication')
     app = QApplication(sys.argv) 
     app.setApplicationName("ProfileAlpha1")
     app.setOrganizationName("VELABrowser")
@@ -3293,7 +3360,8 @@ if __name__ == '__main__':
     # PyInstallerでexe化した場合、__file__のパス解決が不安定になるため、
     # User-Agentを一般的なChromeのものに設定し、サイト互換性を向上させる
     # 一部のサイトでJavaScriptの動作がUser-Agentに依存する場合があるため
-    persistent_profile.setHttpUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+    print('UserAgent:',UserAgent)
+    persistent_profile.setHttpUserAgent(UserAgent)
     
     # ポータブル化のため、プロファイルデータも実行ファイルからの相対パスに保存します。
     data_path = os.path.join(PORTABLE_BASE_PATH, DATA_DIR_NAME)
@@ -3313,4 +3381,5 @@ if __name__ == '__main__':
     main_window.show()
     
     # アプリケーションのイベントループを開始
+    print('Browser is working now\n\n')
     sys.exit(app.exec())
