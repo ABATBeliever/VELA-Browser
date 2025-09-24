@@ -24,7 +24,7 @@ git clone https://github.com/ABATBeliever/VELA-Browser
 ・python3 -m venv VELADev
 ・source ./VELADev/bin/activate
 ・pip install qtawesome PyQt6 PyQt6-WebEngine
-・pip install pyinstaller appimage-builder
+・pip install pyinstaller
 
 <実行方法>
 ・python3 Software.py

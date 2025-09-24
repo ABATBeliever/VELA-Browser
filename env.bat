@@ -7,7 +7,7 @@ set "ACTIVATE_PATH=%~dp0Scripts\activate.bat"
 cls
 
 echo.
-echo VELA Browser Development Kit
+echo VELA Browser Development Kit v2
 echo.
 
 echo Your Python Version:
@@ -27,5 +27,5 @@ python -m venv venvForVELA
 xcopy "%TMP_DIR%\*" "%BASE_DIR%" /E /H /Y
 rmdir /S /Q "%TMP_DIR%"
 echo Restarting...
-call setup.bat
+call env.bat
 )

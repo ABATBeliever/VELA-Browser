@@ -11,20 +11,25 @@ print('                              VELA Browser')
 print('                   Vital Environment for Liberty Access')
 print('               2025 ABATBeliever. Forked From EQUA(Nekoboshi)')
 
-__version__       = "0.2.0"  # TODO: 現在のアプリケーションのバージョンに合わせてください
+__version__       = "0.3.0"  # TODO: 現在のアプリケーションのバージョンに合わせてください
 GITHUB_REPO_OWNER = "ABATBeliever"  # TODO: あなたのGitHubユーザー名またはオーガニゼーション名に置き換えてください
 GITHUB_REPO_NAME  = "VELA-Browser"  # TODO: あなたのGitHubリポジトリ名に置き換えてください
+UPDATE_URL        = f'https://raw.githubusercontent.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/refs/heads/main/version.txt'
 
-print('*\nTHIS VERSION IS ', __version__, '[Alpha]!\nIf you want to save this log, you should open from command line.\n')
+print('*\nTHIS VERSION IS', __version__, '[Alpha]!\nIf you want to save this log, you should open from command line.\n')
 
 # ==============================================================================================================================================================
 # Core/import
 
 # 必要なモジュールをインポート
-import sys
 import os
-import platform
+import sys
 import json
+import ctypes
+import logzero
+import platform
+import requests
+import traceback
 import urllib.request
 import urllib.parse
 import re
@@ -33,7 +38,7 @@ try: # winregはWindows専用モジュールなので、他のOSでエラーに�
     import winreg
 except ImportError:
     winreg = None # Windows以外のOS用のフォールバック
-# from packaging.version import parse as parse_version, InvalidVersion # バージョン番号の比較に使用
+from logzero import logger
 from datetime import datetime # 日時情報の扱いに使用
 from html.parser import HTMLParser # HTMLの解析に使用 (ブックマークインポート)
 import qtawesome as qta # Font Awesomeアイコンを使用するためのライブラリ
@@ -48,6 +53,43 @@ from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile, QWebEng
 from PyQt6.QtCore import QUrl, QSettings, Qt, QStandardPaths, QSize, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QIcon, QCloseEvent, QAction, QDesktopServices, QPixmap, QColor
 
+# ==============================================================================================================================================================
+# Core/Debugger
+
+def custom_excepthook(exc_type, exc_value, exc_traceback):
+    logger.warning('The software will terminate.\nThis is not the proper way to exit.\nClosing the GUI application with the X button is the proper way to exit.\n')
+    if issubclass(exc_type, KeyboardInterrupt):
+        logger.debug('[Debugger] Ctrl+C Pressed')
+
+    print('[Debugger] Except Detected')
+    logger.debug("[Debugger] Except Detected")
+    logger.debug("[Debugger] Type : %s", exc_type)
+    logger.debug("[Debugger] Value: %s", exc_value)
+    logger.error("[Debugger] StackTrace :\n%s", ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+
+    logger.info('[Debugger] Saved to error.log\n*')
+    sys.__excepthook__(exc_type, exc_value, exc_traceback)
+    sys.exit()
+
+sys.excepthook = custom_excepthook
+
+# ==============================================================================================================================================================
+# Core/Update
+
+def get_latest_version():
+    print('[UPDATE CHECK]')
+    try:
+        response = requests.get(UPDATE_URL, timeout=5)
+        response.raise_for_status()
+        return response.text.strip()
+    except Exception as e:
+        print(f"Fail: {e}")
+        return None
+def compare_versions(current: str, latest: str) -> int:
+    def normalize(v):
+        return [int(x) for x in v.split(".")]
+    return (normalize(current) > normalize(latest)) - (normalize(current) < normalize(latest))
+    
 # ==============================================================================================================================================================
 # Core/System
 
@@ -93,17 +135,39 @@ if __name__ == '__main__':
     print('IsRaspberryPi:', is_raspberry_pi())
     print('\n')
 
+if detect_os() == 'Windows':
+    print('Color Setting...')
+    ENABLE_PROCESSED_OUTPUT = 0x0001
+    ENABLE_WRAP_AT_EOL_OUTPUT = 0x0002
+    ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+    MODE = ENABLE_PROCESSED_OUTPUT + ENABLE_WRAP_AT_EOL_OUTPUT + ENABLE_VIRTUAL_TERMINAL_PROCESSING
+
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.GetStdHandle(-11)
+    kernel32.SetConsoleMode(handle, MODE)
+
+for i in range(10):
+    print("[TEST]", end="")
+    for j in range(10):
+        v = i * 10 + j
+        print("\033[{}m{}\033[0m ".format(str(v), str(v).zfill(3)), end="")
+    print("")
+
 # ==============================================================================================================================================================
 # Core/Settings
 
 # --- ポータブル化対応 ---
 def get_portable_base_path():
-    """ポータブルモード用のベースパス（実行ファイルのあるディレクトリ）を取得する。"""
-    if hasattr(sys, 'frozen'):
-        # PyInstallerでexe化された場合
+    if getattr(sys, 'frozen', False):
+        # PyInstaller 用（sys.frozen がある場合）
         return os.path.dirname(sys.executable)
-    # スクリプトとして実行された場合
-    return os.path.dirname(os.path.abspath(__file__))
+    else:
+        if sys.argv[0].endswith(".exe"):
+            # Nuitka の onefile ビルド
+            return os.path.dirname(os.path.abspath(sys.argv[0]))
+        else:
+            # スクリプト or Nuitka standalone
+            return os.path.dirname(os.path.abspath(__file__))
 
 PORTABLE_BASE_PATH = get_portable_base_path()
 print('BASE_PATH:', get_portable_base_path())
@@ -2028,6 +2092,7 @@ class BrowserWindow(QMainWindow):
         self.dev_tools_windows = {}
         self.update_thread = None
         self.fullscreen_request = None # 全画面リクエストを保持
+        self.private_window_action = None # プライベートウィンドウアクションを初期化
 
         # SPA遷移用の擬似プログレスバータイマー
         self._spa_progress_timer = QTimer(self)
@@ -2154,33 +2219,33 @@ class BrowserWindow(QMainWindow):
 
         # 通常モードの場合のみ「新しいプライベートウィンドウ」を追加
         if not self.is_private:
-            private_window_action = QAction(qta.icon('fa5s.user-secret'), "プライベートウィンドウ...", self)
-            private_window_action.triggered.connect(self.open_private_window)
-            main_menu.addAction(private_window_action)
+            self.private_window_action = QAction(qta.icon('fa5s.user-secret'), "プライベートウィンドウ...", self)
+            self.private_window_action.triggered.connect(self.open_private_window)
+            main_menu.addAction(self.private_window_action)
         
         main_menu.addSeparator()
 
         # ブックマークアクション
-        bookmark_action = QAction(qta.icon('fa5s.bookmark'), "ブックマーク", self)
-        bookmark_action.triggered.connect(self.show_bookmark_window)
-        main_menu.addAction(bookmark_action)
+        self.bookmark_action = QAction(qta.icon('fa5s.bookmark'), "ブックマーク", self)
+        self.bookmark_action.triggered.connect(self.show_bookmark_window)
+        main_menu.addAction(self.bookmark_action)
 
         # 履歴アクション
-        history_action = QAction(qta.icon('fa5s.history'), "履歴", self)
-        history_action.triggered.connect(self.show_history_window)
-        main_menu.addAction(history_action)
+        self.history_action = QAction(qta.icon('fa5s.history'), "履歴", self)
+        self.history_action.triggered.connect(self.show_history_window)
+        main_menu.addAction(self.history_action)
 
         # ダウンロードアクション
-        download_action = QAction(qta.icon('fa5s.download'), "ダウンロード", self)
-        download_action.triggered.connect(self.download_manager.show)
-        main_menu.addAction(download_action)
+        self.download_action = QAction(qta.icon('fa5s.download'), "ダウンロード", self)
+        self.download_action.triggered.connect(self.download_manager.show)
+        main_menu.addAction(self.download_action)
 
         main_menu.addSeparator()
 
         # 設定アクション
-        settings_action = QAction(qta.icon('fa5s.cogs'), "設定", self)
-        settings_action.triggered.connect(self.show_settings_dialog)
-        main_menu.addAction(settings_action)
+        self.settings_action = QAction(qta.icon('fa5s.cogs'), "設定", self)
+        self.settings_action.triggered.connect(self.show_settings_dialog)
+        main_menu.addAction(self.settings_action)
 
         main_menu.addSeparator()
 
@@ -2405,8 +2470,6 @@ class BrowserWindow(QMainWindow):
         page.loadProgress.connect(lambda progress, browser=browser: self.handle_load_progress(progress, browser))
         page.loadFinished.connect(lambda ok, browser=browser: self.handle_load_finished(ok, browser))
         
-        if len(label) > 10:
-            label= label[:limit] + "..."
         i = self.tabs.addTab(browser, label) # タブウィジェットに追加
         if set_as_current:
             self.tabs.setCurrentIndex(i)
@@ -2444,6 +2507,12 @@ class BrowserWindow(QMainWindow):
             self.close()
             return
         
+
+        # 削除する前に、ページの読み込みを停止し、内容をクリアします。
+        # これにより、バックグラウンドで実行中のプロセスが、破棄されようとしているウィジェットに
+        # メッセージを送信しようとする競合状態を防ぐことができます。
+        widget_to_close.stop()
+        widget_to_close.setUrl(QUrl("about:blank"))
         self.tabs.removeTab(index)
         # QWebEngineViewを明示的に削除し、音声再生などを停止させる
         widget_to_close.deleteLater()
@@ -3102,7 +3171,20 @@ class BrowserWindow(QMainWindow):
         # メニュー内のアイコン
         if hasattr(self, 'open_file_action'):
             self.open_file_action.setIcon(qta.icon('fa5s.folder-open', color=icon_color))
-#        self.update_action.setIcon(qta.icon('fa5s.sync-alt', color=icon_color))
+        if hasattr(self, 'new_tab_action'):
+            self.new_tab_action.setIcon(qta.icon('fa5s.plus', color=icon_color))
+        if hasattr(self, 'private_window_action') and self.private_window_action:
+            self.private_window_action.setIcon(qta.icon('fa5s.user-secret', color=icon_color))
+        if hasattr(self, 'close_all_tabs_action'):
+            self.close_all_tabs_action.setIcon(qta.icon('fa5s.times-circle', color=icon_color))
+        if hasattr(self, 'bookmark_action'):
+            self.bookmark_action.setIcon(qta.icon('fa5s.bookmark', color=icon_color))
+        if hasattr(self, 'history_action'):
+            self.history_action.setIcon(qta.icon('fa5s.history', color=icon_color))
+        if hasattr(self, 'download_action'):
+            self.download_action.setIcon(qta.icon('fa5s.download', color=icon_color))
+        if hasattr(self, 'settings_action'):
+            self.settings_action.setIcon(qta.icon('fa5s.cogs', color=icon_color))
 
         # 全てのタブのアイコンを更新
         for i in range(self.tabs.count()):
@@ -3379,7 +3461,17 @@ if __name__ == '__main__':
     main_window = BrowserWindow(profile=persistent_profile) 
     windows.append(main_window) # 最初のウィンドウの参照を保持
     main_window.show()
-    
+
+    latest = get_latest_version()
+    if latest:
+        cmp = compare_versions(__version__, latest)
+        if cmp < 0:
+            print(f"NEW VERSION AVALIABLE\n {__version__} -> {latest}")
+        elif cmp == 0:
+            print(f"THIS IS LATEST")
+        else:
+            print(f"THIS IS UN-PUBLISHED VERSION")
+
     # アプリケーションのイベントループを開始
     print('Browser is working now\n\n')
     sys.exit(app.exec())

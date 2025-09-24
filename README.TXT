@@ -39,9 +39,9 @@ UIフレームワーク: PyQt6
 ■ ライセンス
 
 MIT License に基づいて公開されています。
-また、このプロジェクトは EQUA の派生です。
+また、このプロジェクトは EQUA-Portable の派生です。
 
-EQUA ([https://github.com/Keychrom/Project-EQUA/releases])
+EQUA ([https://github.com/Keychrom/Project-EQUA-Portable])
 
 ----------------------------------------------------------------------------
 ■ 免責事項
@@ -54,4 +54,4 @@ EQUA ([https://github.com/Keychrom/Project-EQUA/releases])
 
 不具合報告、要望、コントリビュート等は以下にご連絡ください。
 
-GitHub: []
+GitHub: [https://github.com/ABATBeliever/VELA-Browser]

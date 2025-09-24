@@ -4,6 +4,7 @@ VELA 開発マニュアル for Windows
 以下の環境での開発を前提とします
 ・Windows 11 24H2 Japanese
 ・Python 3.13.1 MSC
+・cmd.exe
 ・実機
 
 <依存関係の入手>
@@ -15,13 +16,21 @@ git clone https://github.com/ABATBeliever/VELA-Browser
 <開発環境の準備>
 ・env.batを起動し、「VELA Browser Development Kit」に入る
 ・pip install qtawesome PyQt6 PyQt6-WebEngine
-・pip install pyinstaller
 
 <実行方法>
 ・Software.py
 
 <ビルド方法>
+
+Pyinstallerを用いる場合
+・pip install pyinstaller
 ・env.batを起動し、「VELA Browser Development Kit」に入る
 ・pyinstaller --clean --icon=software.ico -F Software.py
 ・Kitを閉じ、clean.batを実行
 ・distフォルダに生成される
+
+cx_freeze、py2exe、PyOxidizerを使用しないでください
+
+nuitkaを用いる場合、推奨
+・pip install nuitka
+・nuitka --standalone --onefile --enable-plugin=pyqt6 --follow-imports --windows-icon-from-ico="software.ico" Software.py

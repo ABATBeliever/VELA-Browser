@@ -2,9 +2,6 @@
 echo init
 setlocal
 set "BASE_DIR=%~dp0"
-set "SCRIPTS_DIR=%BASE_DIR%Scripts"
-set "LIB_DIR=%BASE_DIR%LIB"
-set "INCLUDE_DIR=%BASE_DIR%Include"
 cls
 
 echo.
@@ -16,9 +13,17 @@ echo.
 
 del /f .gitignore
 del /f pyvenv.cfg
-rmdir /S /Q "%SCRIPTS_DIR%"
-rmdir /S /Q "%LIB_DIR%"
-rmdir /S /Q "%INCLUDE_DIR%"
+del /f settings.ini
+del /f error.log
+del /f Software.spec
+rmdir /S /Q "%BASE_DIR%Scripts"
+rmdir /S /Q "%BASE_DIR%LIB"
+rmdir /S /Q "%BASE_DIR%data"
+rmdir /S /Q "%BASE_DIR%Include"
+rmdir /S /Q "%BASE_DIR%build"
+rmdir /S /Q "%BASE_DIR%Software.onefile-build"
+rmdir /S /Q "%BASE_DIR%Software.dist"
+rmdir /S /Q "%BASE_DIR%Software.build"
 
 echo Done.
 exit /b

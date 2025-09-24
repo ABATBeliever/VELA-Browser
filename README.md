@@ -1,7 +1,7 @@
 # VELA Browser - Vital Environment for Liberty Access
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
-![Version](https://img.shields.io/badge/version-0.2.0-green.svg)
+![Version](https://img.shields.io/badge/version-0.3.0-green.svg)
 ![Version](https://img.shields.io/badge/Language-Python3.13-yellow.svg)
 
 ## 概要
@@ -16,7 +16,7 @@ VELAはPython、PyQtWebEngine製のモダンなウェブブラウザです。
 - [公式サイト](https://abatbeliever.net/app/VELABrowser/)
 
 ## インストール
-インストールは現時点(Alpha 0.1.0)では不要です。
+インストールは現時点(Alpha 0.3.0)では不要です。
 
 ## 使い方
 ダウンロードしたexeファイルをそのまま起動してください
