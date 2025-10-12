@@ -1,7 +1,7 @@
 # VELA Browser - Vital Environment for Liberty Access
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
-![Version](https://img.shields.io/badge/version-0.3.0-green.svg)
+![Version](https://img.shields.io/badge/version-0.4.0-green.svg)
 ![Version](https://img.shields.io/badge/Language-Python3.13-yellow.svg)
 
 ## 概要
@@ -16,7 +16,7 @@ VELAはPython、PyQtWebEngine製のモダンなウェブブラウザです。
 - [公式サイト](https://abatbeliever.net/app/VELABrowser/)
 
 ## インストール
-インストールは現時点(Alpha 0.3.0)では不要です。
+インストールは現時点(Beta 0.4.0)では不要です。
 
 ## 使い方
 ダウンロードしたexeファイルをそのまま起動してください
@@ -25,4 +25,4 @@ VELAはPython、PyQtWebEngine製のモダンなウェブブラウザです。
 - Qt Framework (The Qt Company Ltd.)
 - PyQt6 (The Qt Company Ltd. and Riverbank Computing Ltd.)
 - QtAwesome (The Spider Development Team)
-- EQUA (StudioNOSA,猫星吹恋)、フォーク元
+- EQUA-Portable (StudioNOSA,猫星吹恋)、フォーク元

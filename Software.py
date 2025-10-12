@@ -8,58 +8,83 @@ print('                      ####    ##        ##         ######       ')
 print('                     ####    ##mmmmmm  ##mmmmmm  m##  ##m       ')
 print('                    """"    """"""""  """"""""  ""    ""        \n')
 print('                              VELA Browser')
-print('                   Vital Environment for Liberty Access')
-print('               2025 ABATBeliever. Forked From EQUA(Nekoboshi)')
+print('                   Vital Environment for Liberty Access\n')
+print('   2025 ABATBeliever.        | https://github.com/ABATBeliever/VELA-Browser')
+print('   Forked from EQUA-Portable | https://github.com/Keychrom/Project-EQUA-Portable')
 
-__version__       = "0.3.0"  # TODO: 現在のアプリケーションのバージョンに合わせてください
+__version__       = "0.4.0"  # TODO: 現在のアプリケーションのバージョンに合わせてください
 GITHUB_REPO_OWNER = "ABATBeliever"  # TODO: あなたのGitHubユーザー名またはオーガニゼーション名に置き換えてください
 GITHUB_REPO_NAME  = "VELA-Browser"  # TODO: あなたのGitHubリポジトリ名に置き換えてください
 UPDATE_URL        = f'https://raw.githubusercontent.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/refs/heads/main/version.txt'
 
-print('*\nTHIS VERSION IS', __version__, '[Alpha]!\nIf you want to save this log, you should open from command line.\n')
+print('\nVERSION ', __version__, '[Beta]')
 
 # ==============================================================================================================================================================
 # Core/import
 
 # 必要なモジュールをインポート
+import io
 import os
+import re
 import sys
 import json
 import ctypes
 import logzero
+import sqlite3
 import platform
-import requests
 import traceback
 import urllib.request
+
 import urllib.parse
-import re
-import sqlite3
 try: # winregはWindows専用モジュールなので、他のOSでエラーにならないようにする
     import winreg
 except ImportError:
     winreg = None # Windows以外のOS用のフォールバック
+
 from logzero import logger
 from datetime import datetime # 日時情報の扱いに使用
 from html.parser import HTMLParser # HTMLの解析に使用 (ブックマークインポート)
 import qtawesome as qta # Font Awesomeアイコンを使用するためのライブラリ
+
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QToolBar, QLineEdit, QTabWidget, QInputDialog, QGroupBox, QStyle, QProxyStyle, QStyleOptionTab, QStyleFactory,
     QWidget, QSizePolicy, QHBoxLayout, QPushButton, QListWidget, QDialog, QVBoxLayout, QMessageBox,
     QLabel, QListWidgetItem, QMenu, QFileDialog, QProgressBar, QScrollArea, QColorDialog, QComboBox, 
     QStackedWidget, QCheckBox 
 )
+
 from PyQt6.QtWebEngineWidgets import QWebEngineView # ウェブページを表示するためのウィジェット
 from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile, QWebEngineUrlRequestInterceptor, QWebEnginePage
 from PyQt6.QtCore import QUrl, QSettings, Qt, QStandardPaths, QSize, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QIcon, QCloseEvent, QAction, QDesktopServices, QPixmap, QColor
+from PyQt6.QtCore import QByteArray, QBuffer, QIODevice
+from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
+
+class VelaSchemeHandler(QWebEngineUrlSchemeHandler):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.buffers = []
+
+    def requestStarted(self, job: QWebEngineUrlRequestJob):
+        url = job.requestUrl().toString()
+        if url.startswith("vela://home"):
+            data = QByteArray(HOME_HTML.encode("utf-8"))
+            buffer = QBuffer()
+            buffer.setData(data)
+            buffer.open(QIODevice.OpenModeFlag.ReadOnly)
+            job.reply(b"text/html", buffer)
+            self.buffers.append(buffer)
+        else:
+            job.fail(QWebEngineUrlRequestJob.Error.FileNotFound)
+
+HOME_HTML = """<!DOCTYPE html><html lang='ja'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><style>body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background-color:#fff;color:#333;transition:background-color 0.3s,color 0.3s}body.dark-mode{background-color:#333;color:#fff}h1{margin-bottom:20px;font-size:2.5em}input[type='text']{padding:10px;width:500px;border:1px solid #ccc;border-radius:5px;margin-right:10px;transition:border-color 0.3s}input[type='text']:focus{border-color:#007bff;outline:none}button{padding:10px 15px;border:none;border-radius:5px;background-color:transparent;color:#007bff;cursor:pointer;font-size:1em;transition:color 0.3s,border 0.3s;border:2px solid transparent}button:hover{color:#fff;background-color:#007bff;border:2px solid #007bff}.button-container{display:flex;gap:10px}</style></head><body><h1><img src='data:image/png;base64,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'></h1><div class='button-container'><input type='text' id='searchBox' placeholder='検索...'></div><br><div class='button-container'><button onclick="(function(){var q=document.getElementById('searchBox').value.trim(); if(q) window.open('https://www.ecosia.org/search?q='+encodeURIComponent(q),'_blank')})()">Ecosia</button><button onclick="(function(){var q=document.getElementById('searchBox').value.trim(); if(q) window.open('https://duckduckgo.com/?q='+encodeURIComponent(q),'_blank')})()">DuckDuckGo</button></div><script>const urlParams=new URLSearchParams(window.location.search);if(urlParams.get('color')==='black') document.body.classList.add('dark-mode');</script></body></html>"""
 
 # ==============================================================================================================================================================
 # Core/Debugger
 
 def custom_excepthook(exc_type, exc_value, exc_traceback):
-    logger.warning('The software will terminate.\nThis is not the proper way to exit.\nClosing the GUI application with the X button is the proper way to exit.\n')
-    if issubclass(exc_type, KeyboardInterrupt):
-        logger.debug('[Debugger] Ctrl+C Pressed')
+    if not issubclass(exc_type, KeyboardInterrupt):
+        logger.warning('The software will be terminated immediately.\n')
 
     print('[Debugger] Except Detected')
     logger.debug("[Debugger] Except Detected")
@@ -72,23 +97,6 @@ def custom_excepthook(exc_type, exc_value, exc_traceback):
     sys.exit()
 
 sys.excepthook = custom_excepthook
-
-# ==============================================================================================================================================================
-# Core/Update
-
-def get_latest_version():
-    print('[UPDATE CHECK]')
-    try:
-        response = requests.get(UPDATE_URL, timeout=5)
-        response.raise_for_status()
-        return response.text.strip()
-    except Exception as e:
-        print(f"Fail: {e}")
-        return None
-def compare_versions(current: str, latest: str) -> int:
-    def normalize(v):
-        return [int(x) for x in v.split(".")]
-    return (normalize(current) > normalize(latest)) - (normalize(current) < normalize(latest))
     
 # ==============================================================================================================================================================
 # Core/System
@@ -133,10 +141,8 @@ def detect_os():
 if __name__ == '__main__':
     print('Type:', detect_os(), platform.uname().machine)
     print('IsRaspberryPi:', is_raspberry_pi())
-    print('\n')
 
 if detect_os() == 'Windows':
-    print('Color Setting...')
     ENABLE_PROCESSED_OUTPUT = 0x0001
     ENABLE_WRAP_AT_EOL_OUTPUT = 0x0002
     ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
@@ -146,12 +152,35 @@ if detect_os() == 'Windows':
     handle = kernel32.GetStdHandle(-11)
     kernel32.SetConsoleMode(handle, MODE)
 
-for i in range(10):
-    print("[TEST]", end="")
-    for j in range(10):
-        v = i * 10 + j
-        print("\033[{}m{}\033[0m ".format(str(v), str(v).zfill(3)), end="")
-    print("")
+print(f'                                                                \033[46m_√√wK\033[0m')
+print(f'                                                           \033[46m_√wWWWWW \033[0m')
+print(f'                                                      \033[46m_√wWWWWWWWWW \033[0m')
+print(f'                                                    \033[46mwWWWWWWWWWWWW \033[0m')
+print(f'                                                \033[46m√wWWWWWWWWWWWWW \033[0m')
+print(f'                                             \033[46m_wWWWWWWWWWWWWWWWW \033[0m')
+print(f'                                           \033[46m√WWWWWWWWWWWWWWWWW \033[0m')
+print(f'                                        \033[46m_wWWWWWWWWWWWWWWWWWWW \033[0m')
+print(f'                                      \033[46m_4WWWWWWWWWWWWWWWWWWWWW \033[0m')
+print(f'                                     \033[46mwWWWWWWWWWWWWWWWWWWWWWWW\033[0m')
+print(f'                                   \033[46m√WWWWWWWWWWWWWWWWWWWWWWWWK\033[0m')
+print(f'                                 \033[46m_WWWWWWWWWWWWWWWWWWWWWWWWWWK\033[0m')
+print(f'                                \033[46m√WWWWWWWWWWWWWWWWWWWWWWWWWWWW\033[0m')
+print(f'                               \033[46mwWWWWWWWWWWWWWWWÑWW**""""""""*\033[0m')
+print(f'                              \033[46m4WWWWWWWWWW""__,√√√√»»»»»»»√√√,,___\033[0m')
+print(f'                             \033[46m@WWWWWWWW$wWWWWWWWWWWWWWWWWWWWWWWWWWWWWWww»\033[0m')
+print(f'                            \033[46m4WWWWWWWWWWWW""""""^^^ ^^""""""WWWWWWWWWWWW"\033[0m')
+print(f'                           \033[46m4WWWWWWW""\033[0m                         \033[46m_WWWWWW" \033[0m')
+print(f'                          \033[46m√WWWW""\033[0m                             \033[46m&WWWWÑ"\033[0m')
+print(f'                          \033[46mWP"\033[0m                                \033[46m@WWWP"\033[0m')
+print(f'                                                           \033[46m_@WW"\033[0m')
+print(f'        \033[44m_√√wæWÑÑÑÑÑÑÑÑÑÑÑWWæw▄▄,_\033[0m                        \033[46m_»""\033[0m')
+print(f'    \033[44m_»*▀"""\033[0m           \033[44m²""▀▀ÑÑÑÑÑÑÑÑWæw▄²__\033[0m')
+print(f'                               \033[44m^"▀ÑÑÑÑÑÑÑÑÑÑWæww▄√,,________,√┤\033[0m')
+print(f'                                      \033[44m""▀▀ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ▀"\033[0m')
+print(f'                \033[44m_,√wæW@ÑÑÑÑÑÑÑÑWWWæw√√,_\033[0m')
+print(f'            \033[44m_»*▀""""\033[0m       \033[44m^"""▀▀▀ÑÑÑÑÑÑÑÑWæw▄,_\033[0m')
+print(f'                                      \033[44m^"▀ÑÑÑÑÑÑÑÑÑÑWæw√▄,,___      __\033[0m')
+print(f'                                             \033[44m""▀ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ▀"\033[0m')
 
 # ==============================================================================================================================================================
 # Core/Settings
@@ -195,7 +224,7 @@ persistent_profile = None # Cookieやキャッシュなどを保持するプロ�
 SETTINGS_FILE_NAME = "settings.ini"
 DATA_DIR_NAME = "data"
 DEFAULT_ADBLOCK_LIST_URL = "https://easylist.to/easylist/easylist.txt"
-UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0"
 
 # ==============================================================================================================================================================
 # Feather/Adblock
@@ -286,13 +315,12 @@ class UpdateBlocklistThread(QThread):
         try:
             req = urllib.request.Request(
                 self.url,
-                headers={'User-Agent': 'Mozilla/5.0'}  # 403 Forbiddenを避けるため
+                headers={'User-Agent': UserAgent}  # 403 Forbiddenを避けるため
             )
             with urllib.request.urlopen(req, timeout=30) as response:
                 if response.status == 200:
                     content = response.read().decode('utf-8', errors='ignore')
                     self.finished.emit(True, content, "") # 成功シグナルを送信
-                    print('[UpdateBlocklistThread] Finish')
                 else:
                     self.finished.emit(False, "", f"サーバーエラー: {response.status}") # 失敗シグナルを送信
                     print('[UpdateBlocklistThread] ERR {response.status}')
@@ -305,609 +333,12 @@ class UpdateBlocklistThread(QThread):
 
 # ダークテーマのスタイルシート (Nord)
 DARK_STYLESHEET = """ 
-/* 全体のフォントと基本カラー */
-QWidget {
-    background-color: #2E3440; /* Nord Polar Night */
-    color: #D8DEE9; /* Nord Snow Storm */
-    font-family: "Segoe UI", "Meiryo", "sans-serif";
-    font-size: 10pt;
-    border: none;
-}
-
-/* メインウィンドウとダイアログ */
-QMainWindow, QDialog {
-    background-color: #3B4252; /* Nord Polar Night */
-}
-
-/* ナビゲーションバー */
-#NavigationBar {
-    background-color: #3B4252;
-    border-bottom: 1px solid #4C566A;
-    padding: 2px;
-}
-
-#NavigationBar QLineEdit {
-    background-color: #2E3440;
-    color: #ECEFF4;
-    border: 1px solid #4C566A;
-    border-radius: 13px;
-    padding: 3px 12px; /* 上下のパディングをさらに縮小 */
-    font-size: 10pt;
-}
-
-#NavigationBar QLineEdit:focus {
-    border: 1px solid #88C0D0; /* Nord Frost */
-}
-
-#NavigationBar QPushButton {
-    background-color: transparent;
-    border: none;
-    padding: 4px;
-    border-radius: 13px;
-    width: 26px;
-    height: 26px;
-}
-
-#NavigationBar QPushButton:hover {
-    background-color: #4C566A;
-}
-
-#NavigationBar QPushButton:pressed {
-    background-color: #434C5E;
-}
-
-/* タブウィジェット */
-QTabWidget::pane:top {
-    /* コンテンツエリアの上部に境界線を引きます。これが「謎の線」の正体です。 */
-    border-top: 1px solid #4C566A;
-}
-QTabBar:top {
-    /* タブバー自体の下の境界線は不要です。 */
-    border-bottom: none;
-}
-QTabWidget::pane:left {
-    border-left: 1px solid #4C566A;
-}
-QTabWidget::pane:right {
-    border-right: 1px solid #4C566A;
-}
-
-QTabBar:left {
-    border-right: 1px solid #434C5E;
-}
-QTabBar:right {
-    border-left: 1px solid #434C5E;
-}
-QTabBar:bottom {
-    border-top: none;
-}
-
-QTabBar::tab:top {
-    background: #3B4252;
-    color: #D8DEE9;
-    padding: 7px 20px; /* 高さを調整して、下の境界線がはみ出さないようにする */
-    border: 1px solid transparent;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    margin-right: 1px; /* タブ間の区切り */
-    min-width: 180px; /* タブの最小幅 */
-    max-width: 220px; /* タブの最大幅 */
-}
-
-QTabBar::tab:bottom {
-    background: #3B4252;
-    color: #D8DEE9;
-    padding: 7px 20px;
-    border: 1px solid transparent;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    margin-right: 1px;
-    min-width: 180px;
-    max-width: 220px;
-}
-
-QTabBar::tab:left, QTabBar::tab:right {
-    background: #3B4252;
-    color: #D8DEE9;
-    padding: 8px 12px;
-    border: 1px solid transparent;
-    margin: 0 1px 1px 1px; /* 上下左右の余白 */
-    border-radius: 5px;
-    min-width: 40px; /* タブの高さ */
-}
-
-QTabBar::tab:hover { background: #434C5E; }
-
-/* 共通の選択タブスタイル */
-QTabBar::tab:selected {
-    background: #2E3440; /* ウィジェット背景と同じにして一体感を出す */
-    color: #ECEFF4;
-    border: 1px solid #4C566A; /* 境界線を基本として定義 */
-}
-
-/* 上タブが選択された場合: 下の境界線を消す */
-QTabBar::tab:selected:top {
-    /* 選択されたタブを1pxだけ下にずらし、paneの上部境界線の上に重ねて隠します。 */
-    margin-bottom: -1px; 
-    /* 下の境界線を、スタイルも含めて背景色と完全に一致させることで、線を消します。 */
-    border-bottom: 1px solid #2E3440;
-}
-
-/* 左タブが選択された場合: 右の境界線を消す */
-QTabBar::tab:selected:left {
-    margin-right: -1px;
-    border-right-color: #2E3440;
-}
-
-/* 右タブが選択された場合: 左の境界線を消す */
-QTabBar::tab:selected:right {
-    margin-left: -1px;
-    border-left-color: #2E3440;
-}
-
-/* 下タブが選択された場合: 上の境界線を消す */
-QTabBar::tab:selected:bottom {
-    /* 選択されたタブを1pxだけ上にずらし、paneの下部境界線の上に重ねて隠します。 */
-    margin-top: -1px;
-    /* 上の境界線を、スタイルも含めて背景色と完全に一致させることで、線を消します。 */
-    border-top: 1px solid #2E3440;
-}
-
-QTabBar::close-button {
-    margin: 2px;
-}
-QTabBar::close-button:hover {
-    background: #4C566A;
-    border-radius: 8px;
-}
-
-/* メニュー */
-QMenu {
-    background-color: #3B4252;
-    border: 1px solid #4C566A;
-    padding: 5px;
-}
-
-QMenu::item {
-    padding: 8px 25px;
-    border-radius: 4px;
-}
-
-QMenu::item:selected {
-    background-color: #81A1C1; /* Nord Frost */
-}
-
-QMenu::separator {
-    height: 1px;
-    background: #4C566A;
-    margin: 5px 0;
-}
-
-/* メッセージボックス */
-QMessageBox {
-    background-color: #3B4252; /* Nord Polar Night */
-}
-
-QMessageBox QLabel {
-    background-color: transparent;
-    color: #D8DEE9;
-    font-size: 10pt;
-}
-
-/* ボタン */
-QPushButton {
-    background-color: #5E81AC; /* Nord Frost */
-    color: #ECEFF4;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: bold;
-}
-
-QPushButton:hover {
-    background-color: #81A1C1;
-}
-
-QPushButton:pressed {
-    background-color: #88C0D0;
-}
-
-/* リストウィジェット */
-QListWidget {
-    background-color: #2E3440;
-    border: 1px solid #4C566A;
-    border-radius: 4px;
-    padding: 2px;
-}
-
-QListWidget::item {
-    padding: 10px;
-    border-radius: 3px;
-}
-
-QListWidget::item:hover {
-    background-color: #434C5E;
-}
-
-QListWidget::item:selected {
-    background-color: #5E81AC;
-    color: #ECEFF4;
-}
-
-/* グループボックス */
-QGroupBox {
-    border: 1px solid #434C5E; /* 少し明るい色に */
-    border-radius: 8px;
-    margin-top: 15px;
-    padding: 20px 15px 15px 15px;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    subcontrol-position: top left;
-    padding: 0 10px;
-    left: 10px;
-    color: #88C0D0;
-    background-color: #2E3440; /* 背景色で線を途切れさせる */
-    font-weight: bold;
-}
-
-/* テキスト入力 */
-QLineEdit {
-    background-color: #434C5E;
-    border: 1px solid #4C566A;
-    padding: 6px;
-    border-radius: 4px;
-}
-
-/* プログレスバー */
-QProgressBar {
-    border: 1px solid #4C566A;
-    border-radius: 5px;
-    text-align: center;
-    color: #ECEFF4;
-    background-color: #434C5E;
-}
-
-QProgressBar::chunk {
-    background-color: #88C0D0; /* Nord Frost */
-    border-radius: 4px;
-}
-
-/* スクロールバー */
-QScrollBar:vertical { border: none; background: #2E3440; width: 12px; margin: 0; }
-QScrollBar::handle:vertical { background: #4C566A; min-height: 25px; border-radius: 6px; }
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
-QScrollBar:horizontal { border: none; background: #2E3440; height: 12px; margin: 0; }
-QScrollBar::handle:horizontal { background: #4C566A; min-width: 25px; border-radius: 6px; }
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0px; }
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { background: none; }
-
-/* 設定ダイアログのカテゴリリスト */
-#SettingsCategories {
-    background-color: #3B4252;
-    border-right: 1px solid #434C5E;
-}
-
-#SettingsCategories::item {
-    padding: 12px 20px;
-    border-left: 3px solid transparent; /* 未選択時は透明 */
-}
-
-#SettingsCategories::item:hover {
-    background-color: #434C5E;
-}
-
-#SettingsCategories::item:selected {
-    background-color: #2E3440; /* 右ペインと一体化 */
-    color: #ECEFF4; /* テキスト色を白に */
-    border-left: 3px solid #88C0D0;
-}
+QWidget{background-color:#1E1E1E;color:#E0E0E0;font-family:"Segoe UI","Meiryo","sans-serif";font-size:10pt;border:none}QMainWindow,QDialog{background-color:#252525}#NavigationBar{background-color:#252525;border-bottom:1px solid #3C3C3C;padding:2px}#NavigationBar QLineEdit{background-color:#2A2A2A;color:#E0E0E0;border:1px solid #3C3C3C;border-radius:13px;padding:3px 12px;font-size:10pt}#NavigationBar QLineEdit:focus{border:1px solid #5AB0F7}#NavigationBar QPushButton{background-color:transparent;border:none;padding:4px;border-radius:13px;width:26px;height:26px}#NavigationBar QPushButton:hover{background-color:#333}#NavigationBar QPushButton:pressed{background-color:#444}QTabWidget::pane:top{border-top:1px solid #3C3C3C}QTabBar:top{border-bottom:none}QTabWidget::pane:left{border-left:1px solid #3C3C3C}QTabWidget::pane:right{border-right:1px solid #3C3C3C}QTabBar:left{border-right:1px solid #252525}QTabBar:right{border-left:1px solid #252525}QTabBar:bottom{border-top:none}QTabBar::tab:top{background:#252525;color:silver;padding:7px 20px;border:1px solid transparent;border-top-left-radius:5px;border-top-right-radius:5px;margin-right:1px;min-width:180px;max-width:220px}QTabBar::tab:bottom{background:#252525;color:silver;padding:7px 20px;border:1px solid transparent;border-bottom-left-radius:5px;border-bottom-right-radius:5px;margin-right:1px;min-width:180px;max-width:220px}QTabBar::tab:left,QTabBar::tab:right{background:#252525;color:silver;padding:8px 12px;border:1px solid transparent;margin:0 1px 1px 1px;border-radius:5px;min-width:40px}QTabBar::tab:hover{background:#333}QTabBar::tab:selected{background:#1E1E1E;color:#FFF;border:1px solid #5AB0F7;font-weight:700}QTabBar::tab:selected:top{margin-bottom:-1px;border-bottom:1px solid #1E1E1E}QTabBar::tab:selected:left{margin-right:-1px;border-right-color:#1E1E1E}QTabBar::tab:selected:right{margin-left:-1px;border-left-color:#1E1E1E}QTabBar::tab:selected:bottom{margin-top:-1px;border-top:1px solid #1E1E1E}QTabBar::close-button{margin:2px}QTabBar::close-button:hover{background:#3C3C3C;border-radius:8px}QMenu{background-color:#252525;border:1px solid #3C3C3C;padding:5px}QMenu::item{padding:8px 25px;border-radius:4px}QMenu::item:selected{background-color:#5AB0F7;color:#FFF}QMenu::separator{height:1px;background:#3C3C3C;margin:5px 0}QMessageBox{background-color:#252525}QMessageBox QLabel{background-color:transparent;color:#E0E0E0;font-size:10pt}QPushButton{background-color:#5AB0F7;color:#FFF;border:none;padding:8px 16px;border-radius:4px;font-weight:700}QPushButton:hover{background-color:#6DB8FA}QPushButton:pressed{background-color:#4A90E2}QListWidget{background-color:#1E1E1E;border:1px solid #3C3C3C;border-radius:4px;padding:2px}QListWidget::item{padding:10px;border-radius:3px}QListWidget::item:hover{background-color:#2C2C2C}QListWidget::item:selected{background-color:#5AB0F7;color:#FFF}QGroupBox{border:1px solid #3C3C3C;border-radius:8px;margin-top:15px;padding:20px 15px 15px 15px}QGroupBox::title{subcontrol-origin:margin;subcontrol-position:top left;padding:0 10px;left:10px;color:#5AB0F7;background-color:#1E1E1E;font-weight:700}QLineEdit{background-color:#2A2A2A;border:1px solid #3C3C3C;padding:6px;border-radius:4px;color:#E0E0E0}QProgressBar{border:1px solid #3C3C3C;border-radius:5px;text-align:center;color:#E0E0E0;background-color:#2A2A2A}QProgressBar::chunk{background-color:#5AB0F7;border-radius:4px}QScrollBar:vertical{border:none;background:#1E1E1E;width:12px;margin:0}QScrollBar::handle:vertical{background:#3C3C3C;min-height:25px;border-radius:6px}QScrollBar::add-line:vertical,QScrollBar::sub-line:vertical{height:0}QScrollBar::add-page:vertical,QScrollBar::sub-page:vertical{background:none}QScrollBar:horizontal{border:none;background:#1E1E1E;height:12px;margin:0}QScrollBar::handle:horizontal{background:#3C3C3C;min-width:25px;border-radius:6px}QScrollBar::add-line:horizontal,QScrollBar::sub-line:horizontal{width:0}QScrollBar::add-page:horizontal,QScrollBar::sub-page:horizontal{background:none}#SettingsCategories{background-color:#252525;border-right:1px solid #3C3C3C}#SettingsCategories::item{padding:12px 20px;border-left:3px solid transparent}#SettingsCategories::item:hover{background-color:#333}#SettingsCategories::item:selected{background-color:#1E1E1E;color:#FFF;border-left:3px solid #5AB0F7}
 """
 
 # ライトテーマのスタイルシート (Nord)
 LIGHT_STYLESHEET = """
-/* 全体のフォントと基本カラー */
-QWidget {
-    background-color: #ECEFF4; /* Nord Snow Storm */
-    color: #2E3440; /* Nord Polar Night */
-    font-family: "Segoe UI", "Meiryo", "sans-serif";
-    font-size: 10pt;
-    border: none;
-}
-
-/* メインウィンドウとダイアログ */
-QMainWindow, QDialog {
-    background-color: #E5E9F0;
-}
-
-/* ナビゲーションバー */
-#NavigationBar {
-    background-color: #E5E9F0;
-    border-bottom: 1px solid #D8DEE9;
-    padding: 2px;
-}
-
-#NavigationBar QLineEdit {
-    background-color: #FFFFFF;
-    color: #2E3440;
-    border: 1px solid #D8DEE9;
-    border-radius: 13px;
-    padding: 3px 12px;
-    font-size: 10pt;
-}
-
-#NavigationBar QLineEdit:focus {
-    border: 1px solid #5E81AC; /* Nord Frost */
-}
-
-#NavigationBar QPushButton {
-    background-color: transparent;
-    border: none;
-    padding: 4px;
-    border-radius: 13px;
-    width: 26px;
-    height: 26px;
-}
-
-#NavigationBar QPushButton:hover {
-    background-color: #D8DEE9;
-}
-
-#NavigationBar QPushButton:pressed {
-    background-color: #BFC9DB;
-}
-
-/* タブウィジェット */
-QTabWidget::pane:top {
-    /* コンテンツエリアの上部に境界線を引きます。これが「謎の線」の正体です。 */
-    border-top: 1px solid #D8DEE9;
-}
-QTabBar:top {
-    /* タブバー自体の下の境界線は不要です。 */
-    border-bottom: none;
-}
-QTabWidget::pane:left {
-    border-left: 1px solid #D8DEE9;
-}
-QTabWidget::pane:right {
-    border-right: 1px solid #D8DEE9;
-}
-
-QTabBar:left {
-    border-right: 1px solid #E5E9F0;
-}
-QTabBar:right {
-    border-left: 1px solid #E5E9F0;
-}
-QTabBar:bottom {
-    border-top: none;
-}
-
-QTabBar::tab:top {
-    background: #E5E9F0;
-    color: #4C566A;
-    padding: 7px 20px; /* 高さを調整して、下の境界線がはみ出さないようにする */
-    border: 1px solid transparent;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    margin-right: 1px; /* タブ間の区切り */
-    min-width: 180px; /* タブの最小幅 */
-    max-width: 220px; /* タブの最大幅 */
-}
-
-QTabBar::tab:bottom {
-    background: #E5E9F0;
-    color: #4C566A;
-    padding: 7px 20px;
-    border: 1px solid transparent;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    margin-right: 1px;
-    min-width: 180px;
-    max-width: 220px;
-}
-
-QTabBar::tab:left, QTabBar::tab:right {
-    background: #E5E9F0;
-    color: #4C566A;
-    padding: 8px 12px;
-    border: 1px solid transparent;
-    margin: 0 1px 1px 1px; /* 上下左右の余白 */
-    border-radius: 5px;
-    min-width: 40px; /* タブの高さ */
-}
-
-QTabBar::tab:hover { background: #D8DEE9; }
-
-/* 共通の選択タブスタイル */
-QTabBar::tab:selected {
-    background: #ECEFF4; /* ウィジェット背景と同じ */
-    color: #2E3440;
-    border: 1px solid #D8DEE9; /* 境界線を基本として定義 */
-}
-
-/* 上タブが選択された場合: 下の境界線を消す */
-QTabBar::tab:selected:top {
-    /* 選択されたタブを1pxだけ下にずらし、paneの上部境界線の上に重ねて隠します。 */
-    margin-bottom: -1px;
-    /* 下の境界線を、スタイルも含めて背景色と完全に一致させることで、線を消します。 */
-    border-bottom: 1px solid #ECEFF4;
-}
-
-/* 左タブが選択された場合: 右の境界線を消す */
-QTabBar::tab:selected:left {
-    margin-right: -1px;
-    border-right-color: #ECEFF4;
-}
-
-/* 右タブが選択された場合: 左の境界線を消す */
-QTabBar::tab:selected:right {
-    margin-left: -1px;
-    border-left-color: #ECEFF4;
-}
-
-/* 下タブが選択された場合: 上の境界線を消す */
-QTabBar::tab:selected:bottom {
-    /* 選択されたタブを1pxだけ上にずらし、paneの下部境界線の上に重ねて隠します。 */
-    margin-top: -1px;
-    /* 上の境界線を、スタイルも含めて背景色と完全に一致させることで、線を消します。 */
-    border-top: 1px solid #ECEFF4;
-}
-
-QTabBar::close-button {
-    margin: 2px;
-}
-QTabBar::close-button:hover {
-    background: #BFC9DB;
-    border-radius: 8px;
-}
-
-/* メニュー */
-QMenu {
-    background-color: #E5E9F0;
-    border: 1px solid #D8DEE9;
-    padding: 5px;
-}
-
-QMenu::item {
-    padding: 8px 25px;
-    border-radius: 4px;
-}
-
-QMenu::item:selected {
-    background-color: #81A1C1; /* Nord Frost */
-    color: #ECEFF4;
-}
-
-QMenu::separator {
-    height: 1px;
-    background: #D8DEE9;
-    margin: 5px 0;
-}
-
-/* メッセージボックス */
-QMessageBox {
-    background-color: #E5E9F0;
-}
-
-QMessageBox QLabel {
-    background-color: transparent;
-    color: #2E3440;
-    font-size: 10pt;
-}
-
-/* ボタン */
-QPushButton {
-    background-color: #5E81AC; /* Nord Frost */
-    color: #ECEFF4;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: bold;
-}
-
-QPushButton:hover {
-    background-color: #81A1C1;
-}
-
-QPushButton:pressed {
-    background-color: #88C0D0;
-}
-
-/* リストウィジェット */
-QListWidget {
-    background-color: #ECEFF4;
-    border: 1px solid #D8DEE9;
-    border-radius: 4px;
-    padding: 2px;
-}
-
-QListWidget::item {
-    padding: 10px;
-    border-radius: 3px;
-}
-
-QListWidget::item:hover {
-    background-color: #E5E9F0;
-}
-
-QListWidget::item:selected {
-    background-color: #5E81AC;
-    color: #ECEFF4;
-}
-
-/* グループボックス */
-QGroupBox {
-    border: 1px solid #D8DEE9;
-    border-radius: 8px;
-    margin-top: 15px;
-    padding: 20px 15px 15px 15px;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    subcontrol-position: top left;
-    padding: 0 10px;
-    left: 10px;
-    color: #5E81AC;
-    background-color: #ECEFF4; /* 背景色で線を途切れさせる */
-    font-weight: bold;
-}
-
-/* テキスト入力 */
-QLineEdit {
-    background-color: #FFFFFF;
-    border: 1px solid #D8DEE9;
-    padding: 6px;
-    border-radius: 4px;
-}
-
-/* プログレスバー */
-QProgressBar {
-    border: 1px solid #D8DEE9;
-    border-radius: 5px;
-    text-align: center;
-    color: #2E3440;
-    background-color: #E5E9F0;
-}
-
-QProgressBar::chunk {
-    background-color: #88C0D0; /* Nord Frost */
-    border-radius: 4px;
-}
-
-/* スクロールバー */
-QScrollBar:vertical { border: none; background: #ECEFF4; width: 12px; margin: 0; }
-QScrollBar::handle:vertical { background: #BFC9DB; min-height: 25px; border-radius: 6px; }
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
-QScrollBar:horizontal { border: none; background: #ECEFF4; height: 12px; margin: 0; }
-QScrollBar::handle:horizontal { background: #BFC9DB; min-width: 25px; border-radius: 6px; }
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0px; }
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { background: none; }
-
-/* 設定ダイアログのカテゴリリスト */
-#SettingsCategories {
-    background-color: #E5E9F0;
-    border-right: 1px solid #D8DEE9;
-}
-
-#SettingsCategories::item {
-    padding: 12px 20px;
-    border-left: 3px solid transparent; /* 未選択時は透明 */
-}
-
-#SettingsCategories::item:hover {
-    background-color: #D8DEE9;
-}
-
-#SettingsCategories::item:selected {
-    background-color: #ECEFF4; /* 右ペインと一体化 */
-    color: #2E3440; /* テキスト色を濃く */
-    border-left: 3px solid #5E81AC;
-}
+QWidget{background-color:#F8FAFB;color:#2E3440;font-family:"Segoe UI","Meiryo","sans-serif";font-size:10pt;border:none}QMainWindow,QDialog{background-color:#FFF}#NavigationBar{background-color:#FFF;border-bottom:1px solid #D0D7DE;padding:2px}#NavigationBar QLineEdit{background-color:#FFF;color:#2E3440;border:1px solid #D0D7DE;border-radius:13px;padding:3px 12px;font-size:10pt}#NavigationBar QLineEdit:focus{border:1px solid #4A90E2}#NavigationBar QPushButton{background-color:transparent;border:none;padding:4px;border-radius:13px;width:26px;height:26px}#NavigationBar QPushButton:hover{background-color:#E6EBEF}#NavigationBar QPushButton:pressed{background-color:#CBD4DB}QTabWidget::pane:top{border-top:1px solid #D0D7DE}QTabBar:top{border-bottom:none}QTabWidget::pane:left{border-left:1px solid #D0D7DE}QTabWidget::pane:right{border-right:1px solid #D0D7DE}QTabBar:left{border-right:1px solid #FFF}QTabBar:right{border-left:1px solid #FFF}QTabBar:bottom{border-top:none}QTabBar::tab:top{background:#F1F3F6;color:#4C566A;padding:7px 20px;border:1px solid #D0D7DE;border-top-left-radius:5px;border-top-right-radius:5px;margin-right:1px;min-width:180px;max-width:220px}QTabBar::tab:bottom{background:#F1F3F6;color:#4C566A;padding:7px 20px;border:1px solid #D0D7DE;border-bottom-left-radius:5px;border-bottom-right-radius:5px;margin-right:1px;min-width:180px;max-width:220px}QTabBar::tab:left,QTabBar::tab:right{background:#F1F3F6;color:#4C566A;padding:8px 12px;border:1px solid #D0D7DE;margin:0 1px 1px 1px;border-radius:5px;min-width:40px}QTabBar::tab:hover{background:#E6EBEF}QTabBar::tab:selected{background:#FFF;color:#2E3440;border:1px solid #4A90E2;font-weight:700}QTabBar::tab:selected:top{margin-bottom:-1px;border-bottom:1px solid #FFF}QTabBar::tab:selected:left{margin-right:-1px;border-right-color:#FFF}QTabBar::tab:selected:right{margin-left:-1px;border-left-color:#FFF}QTabBar::tab:selected:bottom{margin-top:-1px;border-top:1px solid #FFF}QTabBar::close-button{margin:2px}QTabBar::close-button:hover{background:#CBD4DB;border-radius:8px}QMenu{background-color:#FFF;border:1px solid #D0D7DE;padding:5px}QMenu::item{padding:8px 25px;border-radius:4px}QMenu::item:selected{background-color:#4A90E2;color:#FFF}QMenu::separator{height:1px;background:#D0D7DE;margin:5px 0}QMessageBox{background-color:#FFF}QMessageBox QLabel{background-color:transparent;color:#2E3440;font-size:10pt}QPushButton{background-color:#4A90E2;color:#FFF;border:none;padding:8px 16px;border-radius:4px;font-weight:700}QPushButton:hover{background-color:#6EA8FF}QPushButton:pressed{background-color:#2E7DD7}QListWidget{background-color:#F8FAFB;border:1px solid #D0D7DE;border-radius:4px;padding:2px}QListWidget::item{padding:10px;border-radius:3px}QListWidget::item:hover{background-color:#E6EBEF}QListWidget::item:selected{background-color:#4A90E2;color:#FFF}QGroupBox{border:1px solid #D0D7DE;border-radius:8px;margin-top:15px;padding:20px 15px 15px 15px}QGroupBox::title{subcontrol-origin:margin;subcontrol-position:top left;padding:0 10px;left:10px;color:#4A90E2;background-color:#F8FAFB;font-weight:700}QLineEdit{background-color:#FFF;border:1px solid #D0D7DE;padding:6px;border-radius:4px}QProgressBar{border:1px solid #D0D7DE;border-radius:5px;text-align:center;color:#2E3440;background-color:#F1F3F6}QProgressBar::chunk{background-color:#4A90E2;border-radius:4px}QScrollBar:vertical{border:none;background:#F8FAFB;width:12px;margin:0}QScrollBar::handle:vertical{background:#CBD4DB;min-height:25px;border-radius:6px}QScrollBar::add-line:vertical,QScrollBar::sub-line:vertical{height:0}QScrollBar::add-page:vertical,QScrollBar::sub-page:vertical{background:none}QScrollBar:horizontal{border:none;background:#F8FAFB;height:12px;margin:0}QScrollBar::handle:horizontal{background:#CBD4DB;min-width:25px;border-radius:6px}QScrollBar::add-line:horizontal,QScrollBar::sub-line:horizontal{width:0}QScrollBar::add-page:horizontal,QScrollBar::sub-page:horizontal{background:none}#SettingsCategories{background-color:#FFF;border-right:1px solid #D0D7DE}#SettingsCategories::item{padding:12px 20px;border-left:3px solid transparent}#SettingsCategories::item:hover{background-color:#E6EBEF}#SettingsCategories::item:selected{background-color:#F8FAFB;color:#2E3440;border-left:3px solid #4A90E2}
 """
 
 # テーマ名とスタイルシートの辞書
@@ -999,10 +430,7 @@ class BookmarkHTMLParser(HTMLParser):
 # JavaScriptのコンソールエラーを抑制するためのカスタムWebEnginePage
 class SilentWebEnginePage(QWebEnginePage):
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
-        # ウェブサイト側から出力されるJavaScriptのコンソールメッセージを
-        # ターミナルに表示しないようにします。
-        # デバッグ時に確認したい場合は、以下のコメントを解除してください。
-        # print(f"JS Console ({sourceID}:{lineNumber}): {message}")
+        print(f"JS Console ({sourceID}:{lineNumber}): {message}")
         pass
 
     def createWindow(self, window_type):
@@ -1234,7 +662,7 @@ class HistoryWindow(QDialog):
                 self.list_widget.addItem(item)
 
         except sqlite3.Error as e:
-            print(f"履歴データベースの読み込みに失敗しました: {e}")
+            print(f"filter_items() Error: {e}")
         finally:
             if conn:
                 conn.close()
@@ -1346,7 +774,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(app_icon_label)
 
         # アプリ名とバージョン
-        title_label = QLabel("<p>VELA <p style='color: red;'>注意！Alpha版です</p></p>")
+        title_label = QLabel("<p>VELA - Beta</p>")
         title_font = title_label.font()
         title_font.setPointSize(22)
         title_font.setBold(True)
@@ -1453,7 +881,7 @@ class SettingsDialog(QDialog):
         search_engine_label = QLabel("デフォルトの検索エンジン:")
         self.search_engine_combo = QComboBox()
         self.search_engine_combo.addItems(SEARCH_ENGINES.keys())
-        current_search_engine = self.parent.settings.value("search_engine", "Bing")
+        current_search_engine = self.parent.settings.value("search_engine", "DuckDuckGo")
         self.search_engine_combo.setCurrentText(current_search_engine)
         self.search_engine_combo.currentTextChanged.connect(self.parent.change_search_engine)
         search_engine_layout.addWidget(search_engine_label)
@@ -1970,7 +1398,7 @@ class DownloadItemWidget(QWidget):
 
         self.action_button = QPushButton()
         # アクションボタンの幅を固定してレイアウトを安定させる
-        self.action_button.setFixedWidth(100)
+        self.action_button.setMinimumWidth(100)
         self.action_button.clicked.connect(self.perform_action)
         layout.addWidget(self.action_button)
 
@@ -2080,9 +1508,10 @@ class BrowserWindow(QMainWindow):
     def __init__(self, profile):
         super().__init__()
 
-        self.setWindowIcon(QIcon(resource_path('equa.ico')))
+        self.setWindowIcon(QIcon(resource_path('software.ico')))
 
         self.profile = profile
+        self.profile.installUrlSchemeHandler(b"vela", VelaSchemeHandler(self))
         self.is_private = self.profile.isOffTheRecord()
 
         # 各種ダイアログやスレッドの参照を保持
@@ -2121,7 +1550,11 @@ class BrowserWindow(QMainWindow):
         # ウィンドウへのファイルのドラッグ＆ドロップを有効化
         self.setAcceptDrops(True)
 
-        self.default_new_tab_url = self.settings.value("default_new_tab_url", "https://start.duckduckgo.com/")
+        theme = self.settings.value("theme", "ダーク") # 設定からテーマ名を取得
+        if theme == "ライト":
+            self.default_new_tab_url = self.settings.value("default_new_tab_url", "vela://home")
+        else:
+            self.default_new_tab_url = self.settings.value("default_new_tab_url", "vela://home?color=black")
 
         # 履歴DBとブックマークのファイルパスを初期化
         self.history_db_path = os.path.join(self.data_path, "history.sqlite")
@@ -2249,11 +1682,6 @@ class BrowserWindow(QMainWindow):
 
         main_menu.addSeparator()
 
-        # アップデート確認アクション
-#        self.update_action = QAction("アップデートを確認", self)
-#        self.update_action.triggered.connect(self.manual_check_for_updates)
-#        main_menu.addAction(self.update_action)
-
         self.menu_button.setMenu(main_menu)
         navigation_layout.addWidget(self.menu_button)
         
@@ -2295,11 +1723,10 @@ class BrowserWindow(QMainWindow):
                      self.close_current_tab(0)
                 if 0 <= current_index < self.tabs.count():
                     self.tabs.setCurrentIndex(current_index)
-                print('[Session Restore] Closed')
             else:
                 # 復元するセッションがない場合はデフォルトページを開く
                 self.add_new_tab(QUrl(self.default_new_tab_url), "新しいタブ")
-                print('[Session Restore] Canceled')
+                print('[Session Restore] None')
         else:
             # プライベートモードまたは設定が無効な場合はデフォルトページを開く
             self.add_new_tab(QUrl(self.default_new_tab_url), "新しいタブ")
@@ -2448,7 +1875,6 @@ class BrowserWindow(QMainWindow):
         settings = browser.settings()
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.PdfViewerEnabled, False)
-        print('PdfViewer Deactivated')
         settings.setAttribute(QWebEngineSettings.WebAttribute.FullScreenSupportEnabled, True)
         # JavaScript関連の設定を明示的に有効化。一部サイトのレンダリング問題を解決するため。
         settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, True)
@@ -2469,6 +1895,8 @@ class BrowserWindow(QMainWindow):
         page.loadStarted.connect(lambda browser=browser: self.handle_load_started(browser))
         page.loadProgress.connect(lambda progress, browser=browser: self.handle_load_progress(progress, browser))
         page.loadFinished.connect(lambda ok, browser=browser: self.handle_load_finished(ok, browser))
+        # Faviconの変更をハンドル
+        page.iconChanged.connect(lambda icon, browser=browser: self.handle_icon_changed(icon, browser))
         
         i = self.tabs.addTab(browser, label) # タブウィジェットに追加
         if set_as_current:
@@ -2617,7 +2045,6 @@ class BrowserWindow(QMainWindow):
         url_text = self.url_bar.text().strip()
         if not url_text:
             return
-        print('NAVIGATE TO URL\nTEXT:',url_text)
 
         # 入力されたテキストがURLか検索クエリかを判定するヒューリスティック
         # 1. ' 'を含まず'.'を含む (example.com)
@@ -2626,15 +2053,13 @@ class BrowserWindow(QMainWindow):
         is_url = (' ' not in url_text and '.' in url_text) or url_text.lower() == 'localhost'
         qurl = QUrl(url_text)
         if qurl.scheme():
-            print('Type: URL')
             is_url = True
 
         if is_url:
             if not qurl.scheme(): # スキームがなければhttpsを付与
-                qurl.setScheme("https")
+                qurl = "https://" , qurl
             current_browser.setUrl(qurl)
         else:
-            print('Type: Query')
             # 検索クエリとして処理
             search_engine_name = self.settings.value("search_engine", "DuckDuckGo")
             search_url_template = SEARCH_ENGINES.get(search_engine_name, "https://duckduckgo.com/?q={}")
@@ -2738,6 +2163,12 @@ class BrowserWindow(QMainWindow):
         menu.addAction(capture_action)
 
         menu.exec(self.tabs.tabBar().mapToGlobal(pos))
+
+    def handle_icon_changed(self, icon, browser):
+        """Faviconが変更されたときにタブのアイコンを更新する"""
+        index = self.tabs.indexOf(browser)
+        if index != -1:
+            self.update_tab_visuals(index)
 
     def open_file(self):
         """ファイルダイアログを開き、選択されたファイルを新しいタブで開く"""
@@ -2896,7 +2327,13 @@ class BrowserWindow(QMainWindow):
         elif page.recentlyAudible():
             icon = qta.icon('fa5s.volume-up', color=self.theme_colors['icon_color'])
         
-        # 優先度2: グループの状態 (グループに属しているか)
+        # 優先度2: Favicon
+        if not icon:
+            favicon = page.icon()
+            if not favicon.isNull():
+                icon = favicon
+        
+        # 優先度3: グループの状態 (グループに属しているか)
         if not icon:
             group_name = widget.property("group_name")
             if group_name and group_name in self.groups:
@@ -2905,7 +2342,7 @@ class BrowserWindow(QMainWindow):
                 pixmap.fill(color)
                 icon = QIcon(pixmap)
 
-        # 優先度3: デフォルト
+        # 優先度4: デフォルト
         if not icon:
             icon = qta.icon(
                 'fa5s.globe-americas',
@@ -3034,7 +2471,6 @@ class BrowserWindow(QMainWindow):
         self.settings.setValue("search_engine", engine_name)
 
     def closeEvent(self, a0: QCloseEvent):
-        print('\n\ncloseEvent')
         """ウィンドウを閉じる際に履歴とブックマークを保存するイベントハンドラ"""
         # グローバルリストからこのウィンドウの参照を削除
         if self in windows:
@@ -3048,10 +2484,8 @@ class BrowserWindow(QMainWindow):
 
         # 通常モードの場合のみ各種情報を保存
         if not self.is_private:
-            print('Save Settings')
             # 終了時にデータを削除する設定が有効な場合
             if self.settings.value("privacy/clear_on_exit", False, type=bool):
-                print('Mode: Clear on exit')
                 self.clear_browsing_data()
                 # セッションやウィンドウサイズは保存しないので、保存済みの情報をクリア
                 self.settings.remove("session/urls")
@@ -3061,7 +2495,6 @@ class BrowserWindow(QMainWindow):
             else:
                 # 通常の保存処理
                 # ウィンドウのサイズと位置を保存
-                print('Mode: Normal')
                 if self.settings.value("window_geometry_restore_enabled", True, type=bool):
                     self.settings.setValue("windowGeometry", self.saveGeometry())
                     self.settings.setValue("windowState", self.saveState())
@@ -3072,16 +2505,15 @@ class BrowserWindow(QMainWindow):
                     self.settings.setValue("session/current_index", self.tabs.currentIndex())
             self.save_bookmarks()
         super().closeEvent(a0)
-        print('\n*')
 
     def open_private_window(self):
         """新しいプライベートウィンドウを開く"""
         # 新しいオフザレコードプロファイルでウィンドウを作成
         private_profile = QWebEngineProfile()
         # User-Agentを設定して互換性を向上
-        private_profile.setHttpUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        private_profile.setHttpUserAgent(UserAgent)
         # プライベートウィンドウも現在の広告ブロック設定に従う
-        # current_ad_block_setting = self.settings.value("ad_block_enabled", True, type=bool) # この行は不要
+        current_ad_block_setting = self.settings.value("ad_block_enabled", True, type=bool) # この行は不要
         private_window = BrowserWindow(profile=private_profile)
         windows.append(private_window) # ウィンドウへの参照を保持
         private_window.show()
@@ -3135,25 +2567,11 @@ class BrowserWindow(QMainWindow):
         theme = self.settings.value("theme", "ダーク") # 設定からテーマ名を取得
         if theme == "ライト":
             self.theme_colors = {
-                "icon_color": "#4C566A",
-                "icon_active_color": "#5E81AC",
-                "text_color": "#2E3440",
-                "link_color": "#5E81AC",
-                "progress_bar_color": "#81A1C1",
-                "url_bar_bg_color": "#FFFFFF",
-                "url_bar_border_color": "#D8DEE9",
-                "url_bar_border_focus_color": "#5E81AC",
+"icon_color":"#7A6F5C","icon_active_color":"#C89F5D","text_color":"#3A3128","link_color":"#C89F5D","progress_bar_color":"#DAB67A","url_bar_bg_color":"#FDFBF8","url_bar_border_color":"#E6E2DC","url_bar_border_focus_color":"#C89F5D",
             }
         else:  # ダーク
             self.theme_colors = {
-                "icon_color": "#D8DEE9",
-                "icon_active_color": "#88C0D0",
-                "text_color": "#D8DEE9",
-                "link_color": "#88C0D0",
-                "progress_bar_color": "#88C0D0",
-                "url_bar_bg_color": "#2E3440",
-                "url_bar_border_color": "#4C566A",
-                "url_bar_border_focus_color": "#88C0D0",
+"icon_color":"#E0E0E0","icon_active_color":"#5AB0F7","text_color":"#E0E0E0","link_color":"#5AB0F7","progress_bar_color":"#5AB0F7","url_bar_bg_color":"#1E1E1E","url_bar_border_color":"#3C3C3C","url_bar_border_focus_color":"#5AB0F7",
             }
 
     def update_theme_elements(self):
@@ -3369,7 +2787,6 @@ def apply_application_theme(theme_name):
     actual_theme_name = theme_name if theme_name != "自動" else "ダーク"
     if theme_name == "自動": # 「自動」の場合はOSのテーマを取得
         theme_name = "ダーク"
-    print('[Apply_Application_Theme]', theme_name)
 
     # アプリケーションインスタンスにスタイルシートを適用
     QApplication.instance().setStyleSheet(THEMES.get(actual_theme_name, DARK_STYLESHEET))
@@ -3419,7 +2836,6 @@ if __name__ == '__main__':
         os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = f"{existing_flags} --disable-gpu".strip()
 
     # QApplicationインスタンスを作成
-    print('\nCreating QApplication')
     app = QApplication(sys.argv) 
     app.setApplicationName("ProfileAlpha1")
     app.setOrganizationName("VELABrowser")
@@ -3462,16 +2878,5 @@ if __name__ == '__main__':
     windows.append(main_window) # 最初のウィンドウの参照を保持
     main_window.show()
 
-    latest = get_latest_version()
-    if latest:
-        cmp = compare_versions(__version__, latest)
-        if cmp < 0:
-            print(f"NEW VERSION AVALIABLE\n {__version__} -> {latest}")
-        elif cmp == 0:
-            print(f"THIS IS LATEST")
-        else:
-            print(f"THIS IS UN-PUBLISHED VERSION")
-
     # アプリケーションのイベントループを開始
-    print('Browser is working now\n\n')
     sys.exit(app.exec())

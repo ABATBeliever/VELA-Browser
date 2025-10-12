@@ -21,8 +21,8 @@ rmdir /S /Q "%BASE_DIR%LIB"
 rmdir /S /Q "%BASE_DIR%data"
 rmdir /S /Q "%BASE_DIR%Include"
 rmdir /S /Q "%BASE_DIR%build"
-rmdir /S /Q "%BASE_DIR%Software.onefile-build"
 rmdir /S /Q "%BASE_DIR%Software.dist"
+rmdir /S /Q "%BASE_DIR%Software.onefile-build"
 rmdir /S /Q "%BASE_DIR%Software.build"
 
 echo Done.
