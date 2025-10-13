@@ -16,14 +16,14 @@ del /f pyvenv.cfg
 del /f settings.ini
 del /f error.log
 del /f Software.spec
-rmdir /S /Q "%BASE_DIR%Scripts"
 rmdir /S /Q "%BASE_DIR%LIB"
 rmdir /S /Q "%BASE_DIR%data"
-rmdir /S /Q "%BASE_DIR%Include"
 rmdir /S /Q "%BASE_DIR%build"
+rmdir /S /Q "%BASE_DIR%Include"
+rmdir /S /Q "%BASE_DIR%Scripts"
 rmdir /S /Q "%BASE_DIR%Software.dist"
-rmdir /S /Q "%BASE_DIR%Software.onefile-build"
 rmdir /S /Q "%BASE_DIR%Software.build"
+rmdir /S /Q "%BASE_DIR%Software.onefile-build"
 
 echo Done.
 exit /b
