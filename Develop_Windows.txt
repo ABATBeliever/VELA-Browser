@@ -33,4 +33,4 @@ cx_freeze、py2exe、PyOxidizerを使用しないでください
 
 nuitkaを用いる場合、推奨
 pip install nuitka
-nuitka --standalone --onefile --enable-plugin=pyqt6 --follow-imports --windows-icon-from-ico="software.ico" Software.py
+nuitka --standalone --onefile --enable-plugin=pyqt6 --follow-imports --windows-console-mode=disable --windows-icon-from-ico="software.ico" Software.py

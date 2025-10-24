@@ -9,7 +9,7 @@
                               VELA Browser
                    Vital Environment for Liberty Access
 
-                  2025 ABATBeliever. Under MIT License.
+                  2025 ABATBeliever. Under GPL License.
 
 ----------------------------------------------------------------------------
 ■ 概要
@@ -38,7 +38,7 @@ UIフレームワーク: PyQt6
 ----------------------------------------------------------------------------
 ■ ライセンス
 
-MIT License に基づいて公開されています。
+GPL License に基づいて公開されています。
 また、このプロジェクトは EQUA-Portable の派生です。
 
 EQUA ([https://github.com/Keychrom/Project-EQUA-Portable])
