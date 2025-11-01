@@ -2,6 +2,29 @@ VELA 開発マニュアル for RaspberryPi
 
 <前提条件>
 以下の環境での開発を前提とします
+・RaspberryPiOS Bookwormまたはそれ以降
+・RaspberryPi4Bまたはそれ以降
+・1GB以上の空き容量
+
+==============================================================================================================
+<自動セットアップ>
+VELA 1.0.0 Pre2以降、RaspberryPiOS向けのDevelopment Kit(β)が利用可能です。
+
+<Development Kitに入る>
+chmod +x ./env-rasp.sh
+sudo ./env-rasp.sh
+
+※依存関係の解決が行われます、インターネットに接続してください
+※シンボリックを張ります、他の開発環境上で使用すると思わぬ結果になることがあります
+※RaspberryPiOS以外のすべてのLinuxが動作しているRaspberryPiはサポートされません、Ubuntu for RaspberryPiもダメ
+※RaspberryPi以外のPCにRaspberryPiOSを入れている場合もサポートされません
+※RaspberryPi以外のPCにRaspberryPiOS以外のDebian/Ubuntu系Linuxを入れている場合は、Linux版のマニュアルを参照
+
+==============================================================================================================
+<手動セットアップ>
+
+<前提条件>
+以下の環境での開発を前提とします
 ・RaspberryPi 4B
 ・RaspberryPi OS Bookworm aarch64 (64ビット版)
 ・メモリ4GB以上
@@ -11,9 +34,6 @@ sudo apt install fcitx5 fcitx5-mozc fcitx5-config-qt fcitx5-configtool
 sudo apt install libwebp7 libtiff6
 sudo ln -s /usr/lib/aarch64-linux-gnu/libwebp.so.7 /usr/lib/aarch64-linux-gnu/libwebp.so.6
 sudo ln -s /usr/lib/aarch64-linux-gnu/libtiff.so.6 /usr/lib/aarch64-linux-gnu/libtiff.so.5
-
-<コードの入手>
-git clone https://github.com/ABATBeliever/VELA-Browser
 
 <開発環境の準備>
 python3 -m venv VELADev
@@ -26,6 +46,15 @@ pip install pyinstaller qtawesome logzero
 <実行方法>
 python3 Software.py
 
+※qt.qpa.plugin: From 6.5.0, xcb-cursor0 or libxcb-cursor0 is needed...と表示された場合は、
+sudo apt install libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0
+を実行して再試行
+
 <ビルド方法>
-pyinstaller --clean -F Software.py
-distフォルダに生成される
+nuitkaを用いる場合
+ pip install nuitka
+ nuitka --onefile --enable-plugin=pyqt6 --follow-imports Software.py
+
+pyinstallerを用いる場合
+ pyinstaller --clean -F Software.py
+ distフォルダに生成される

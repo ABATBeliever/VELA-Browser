@@ -2,16 +2,31 @@ VELA 開発マニュアル for Linux
 
 <前提条件>
 以下の環境での開発を前提とします
-Ubuntu 22.04 LTS またはそれ以降
-Python 3.10
+・Debian系のaptが利用可能なOS
+・実機、またはWSLではない仮想マシン
+・1GB以上の空き容量
+・Python 3.10以降
+
+==============================================================================================================
+<自動セットアップ>
+VELA 1.0.0 Pre2以降、Linux(Debian/Ubuntu)向けのDevelopment Kit(β)が利用可能です。
+
+<Development Kitに入る>
+chmod +x ./env.sh
+sudo ./env.sh
+
+※依存関係の解決が行われます、インターネットに接続してください
+※RaspberryPiOSでは実行しないでください、ラズベリーパイ版のマニュアルを参照
+※SlackwareまたはRedHat系のLinux、WSL、またはaptを使用できないすべてのLinuxは対応していません、諦めてください。
+※VELAを実行する場合はsudoなしでDevelopmentKitに入る必要があります。
+
+==============================================================================================================
+<手動セットアップ>
 
 <依存関係の入手>
 sudo apt install python3-pip
 sudo apt install python3.10-venv
 sudo apt install patchelf
-
-<コードの入手>
-git clone https://github.com/ABATBeliever/VELA-Browser
 
 <開発環境の準備>
 python3 -m venv VELADev
@@ -21,7 +36,15 @@ pip install qtawesome PyQt6 PyQt6-WebEngine logzero
 <実行方法>
 python3 Software.py
 
+※qt.qpa.plugin: From 6.5.0, xcb-cursor0 or libxcb-cursor0 is needed...と表示された場合は、
+sudo apt install libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0
+を実行して再試行
+
 <ビルド方法>
-pip install pyinstaller
-pyinstaller --clean -F Software.py
-distフォルダに生成される
+nuitkaを用いる場合
+ sudo apt install nuitka
+ nuitka --onefile --enable-plugin=pyqt6 --follow-imports Software.py
+
+pyinstallerを用いる場合
+ pip install pyinstaller
+ pyinstaller --clean -F Software.py

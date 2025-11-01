@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>更新履歴</title>
+  <style>
+    html,body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111}
+    h1{font-size:1.4rem;margin:0 0 8px}
+    p{margin:0 0 12px}
+    .container{max-width:900px;margin:0 auto}
+    section{border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin-bottom:12px;background:#fafafa}
+    h2{font-size:1.1rem;margin:0 0 6px;color:#333}
+    .date{font-size:0.9rem;color:#666;margin-bottom:6px}
+    ul{margin:0 0 0 20px;padding:0}
+    li{margin-bottom:4px}
+    .small{font-size:0.9rem;color:#555;margin-top:20px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>更新履歴</h1>
+    <p class="small">VELA のバージョン履歴と主な変更点。</p>
+
+    <section>
+      <h2>v1.0.0 Pre2</h2>
+      <div class="date">2025-10-30</div>
+      <ul>
+        <li>起動時のタイトルの問題を修正しました</li>
+        <li>Linux&RaspberryPi向け開発環境を改良しました</li>
+        <li>macOSに正式に対応しました</li>
+        <li>誤字を修正しました</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>v1.0.0 Pre1</h2>
+      <div class="date">2025-10-24</div>
+      <ul>
+        <li>正式リリース候補版として、ログを削減しました</li>
+        <li>プロファイル名が変更されます(ProfileAlpha1 -> ProfileV1)</li>
+        <li>DoNotTrackヘッダーが送信されるようになりました</li>
+        <li>UserAgentがMicrosoft Edgeの139～141のものにランダムに指定されます。これは起動する度に変わります</li>
+        <li>vela://about を追加しました</li>
+        <li>vela://update-log を追加しました</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>v0.5.0 Beta</h2>
+      <div class="date">2025-10-13</div>
+      <ul>
+        <li>vela://home 以外のすべてのvela://にアクセスするとクラッシュする問題を修正しました</li>
+        <li>不正なvela://にアクセスできる問題を修正しました</li>
+        <li>特定の条件下で起動しなくなる問題を緩和しました</li>
+        <li>vela://bench を追加しました</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>v0.4.0 Beta</h2>
+      <div class="date">2025-10-12</div>
+      <ul>
+        <li>ログをlogzeroベースに移行しました</li>
+        <li>起動時に独自のページを開くように修正しました</li>
+        <li>色モードをEQUA互換から変更しました</li>
+        <li>ダウンロードマネージャーのUIの問題を修正しました</li>
+        <li>ファビコンが今後表示されます</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>v0.3.0 Alpha</h2>
+      <div class="date">2025-09-24</div>
+      <ul>
+        <li>ログを実験的にlogzeroベースに移行しました</li>
+        <li>WindowsとVELAの色モードが異なる場合の一部アイコンの色の問題を修正しました</li>
+        <li>Windows版ビルドにnuitkaを使用し、大幅にファイルサイズを削減しました</li>
+        <li>カラー機能を暫定実装しました</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>v0.2.0 Alpha</h2>
+      <div class="date">2025-09-21</div>
+      <ul>
+        <li>RaspberryPi版においてGPUアクセラレーションを無効化しました</li>
+        <li>OSやプラットフォームに関する最適化を実施しました</li>
+        <li>OSやプラットフォームの判定関数を追加しました</li>
+        <li>ログを多くしました</li>
+        <li>PDFの読み込みを一時的に無効化しました</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>v0.1.0 Alpha</h2>
+      <div class="date">2025-09-19</div>
+      <ul>
+        <li>初版アルファリリース</li>
+        <li>EQUA-Portableをベースに開発しました</li>
+        <li>アップデーターを削除したり、名称をユニークにするなど、EQUAとの切り離しを行いました</li>
+        <li>タブは既定で左側になります</li>
+        <li>既定はダークモードになります</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>
