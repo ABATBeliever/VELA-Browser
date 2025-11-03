@@ -13,6 +13,10 @@ echo "Your Python Version:"
 python3 -V
 echo
 
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Administrator:yes"
+fi
+
 echo "Installing dependencies..."
 sudo apt update -y
 sudo apt install fcitx5 fcitx5-mozc fcitx5-config-qt fcitx5-configtool

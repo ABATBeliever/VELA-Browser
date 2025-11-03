@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 #
 __version__       = "1.0.0"
-GITHUB_REPO_OWNER = "ABATBeliever"
-GITHUB_REPO_NAME  = "VELA-Browser"
 BENCH_URL         = "https://abatbeliever.net/app/VELABrowser/tool/Bench.html"
-print(__version__, 'Pre2')
+print("VELA Browser " , __version__ , "- 'Genesis'\n")
+print('Made by ABATBeliever. Forked From EQUA-Portable')
+print('VELA Website     | https://abatbeliever.net/app/VELABrowser/')
+print('VELA Github Repo | https://github.com/ABATBeliever/VELA-Browser')
+print('EQUA Portable    | https://github.com/Keychrom/Project-EQUA-Portable\n')
 
 # ==============================================================================================================================================================
 # Core/import
@@ -50,6 +52,23 @@ from PyQt6.QtCore import QByteArray, QBuffer, QIODevice
 from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 
 args = sys.argv
+
+import os
+import sys
+
+def is_admin():
+    try:
+        if os.name == 'nt':
+            import ctypes
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        else:
+            return os.geteuid() == 0
+    except Exception:
+        return False
+
+if is_admin():
+    print("\nLaunching VELA as adminin is not permitted.\n")
+    sys.exit(1)
 
 class DNTInterceptor(QWebEngineUrlRequestInterceptor):
     def interceptRequest(self, info):
@@ -150,12 +169,14 @@ def is_raspberry_pi():
 def detect_os():
     system = platform.system().lower()
     if 'windows' in system:
-        return 'Windows'
+        return 'Windows OS'
     if 'linux' in system:
         if is_raspberry_pi():
-            return 'Raspberry Pi'
+            return 'RaspberryPi OS'
         else:
-            return 'Linux'
+            return 'Linux OS'
+    if 'darwin' in system:
+        return 'macOS'
     return platform.system()
 
 # ==============================================================================================================================================================
@@ -164,9 +185,9 @@ def detect_os():
 VELA_HOME_HTML = "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImphIj4KPGhlYWQ+CiAgPG1ldGEgY2hhcnNldD0iVVRGLTgiPgogIDx0aXRsZT5OZXcgUGFnZTwvdGl0bGU+CiAgPHN0eWxlPgogICAgaHRtbCwgYm9keSB7CiAgICAgIG1hcmdpbjogMDsKICAgICAgcGFkZGluZzogMDsKICAgICAgaGVpZ2h0OiAxMDAlOwogICAgICBmb250LWZhbWlseTogIlNlZ29lIFVJIiwgc2Fucy1zZXJpZjsKICAgICAgdHJhbnNpdGlvbjogYmFja2dyb3VuZC1jb2xvciAwLjNzLCBjb2xvciAwLjNzOwogICAgfQoKICAgIC5jb250YWluZXIgewogICAgICBkaXNwbGF5OiBmbGV4OwogICAgICBmbGV4LWRpcmVjdGlvbjogY29sdW1uOwogICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjsKICAgICAgaGVpZ2h0OiAxMDB2aDsKICAgIH0KCiAgICAubG9nbyB7CiAgICAgIHdpZHRoOiAxNjBweDsKICAgICAgaGVpZ2h0OiAxNjBweDsKICAgICAgbWFyZ2luLWJvdHRvbTogMzBweDsKICAgIH0KCiAgICAuc2VhcmNoLWJveCB7CiAgICAgIHdpZHRoOiA0MDBweDsKICAgICAgbWF4LXdpZHRoOiA5MCU7CiAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyOwogICAgfQoKICAgIGlucHV0W3R5cGU9InRleHQiXSB7CiAgICAgIHdpZHRoOiAxMDAlOwogICAgICBwYWRkaW5nOiAxMnB4IDE2cHg7CiAgICAgIGZvbnQtc2l6ZTogMThweDsKICAgICAgYm9yZGVyOiAycHggc29saWQgI2NjYzsKICAgICAgYm9yZGVyLXJhZGl1czogMjVweDsKICAgICAgb3V0bGluZTogbm9uZTsKICAgICAgdHJhbnNpdGlvbjogMC4zczsKICAgICAgYmFja2dyb3VuZC1jb2xvcjogI2ZmZjsKICAgICAgY29sb3I6ICMwMDA7CiAgICB9CgogICAgaW5wdXRbdHlwZT0idGV4dCJdOmZvY3VzIHsKICAgICAgYm9yZGVyLWNvbG9yOiAjODg4OwogICAgICBib3gtc2hhZG93OiAwIDAgOHB4IHJnYmEoMCwgMCwgMCwgMC4xNSk7CiAgICB9CgogICAgYm9keS5kYXJrIHsKICAgICAgYmFja2dyb3VuZC1jb2xvcjogIzEyMTIxMjsKICAgICAgY29sb3I6ICNlZWU7CiAgICB9CgogICAgYm9keS5kYXJrIGlucHV0W3R5cGU9InRleHQiXSB7CiAgICAgIGJhY2tncm91bmQtY29sb3I6ICMxZTFlMWU7CiAgICAgIGNvbG9yOiAjZmZmOwogICAgICBib3JkZXItY29sb3I6ICM0NDQ7CiAgICB9CgogICAgYm9keS5kYXJrIGlucHV0W3R5cGU9InRleHQiXTpmb2N1cyB7CiAgICAgIGJvcmRlci1jb2xvcjogIzg4ODsKICAgICAgYm94LXNoYWRvdzogMCAwIDhweCByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMSk7CiAgICB9CiAgPC9zdHlsZT4KPC9oZWFkPgo8Ym9keT4KICA8ZGl2IGNsYXNzPSJjb250YWluZXIiPgogICAgPGltZyBjbGFzcz0ibG9nbyIgc3JjPSJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUlBQUFBQ0FDQVlBQUFERFBtSExBQUFBQVhOU1IwSUFyczRjNlFBQUFBUm5RVTFCQUFDeGp3djhZUVVBQUFBSmNFaFpjd0FBRHNJQUFBN0NBUlVvU29BQUFBR0hhVlJZZEZoTlREcGpiMjB1WVdSdlltVXVlRzF3QUFBQUFBQThQM2h3WVdOclpYUWdZbVZuYVc0OUorKzd2eWNnYVdROUoxYzFUVEJOY0VObGFHbEllbkpsVTNwT1ZHTjZhMk01WkNjL1BnMEtQSGc2ZUcxd2JXVjBZU0I0Yld4dWN6cDRQU0poWkc5aVpUcHVjenB0WlhSaEx5SStQSEprWmpwU1JFWWdlRzFzYm5NNmNtUm1QU0pvZEhSd09pOHZkM2QzTG5jekxtOXlaeTh4T1RrNUx6QXlMekl5TFhKa1ppMXplVzUwWVhndGJuTWpJajQ4Y21SbU9rUmxjMk55YVhCMGFXOXVJSEprWmpwaFltOTFkRDBpZFhWcFpEcG1ZV1kxWW1Sa05TMWlZVE5rTFRFeFpHRXRZV1F6TVMxa016TmtOelV4T0RKbU1XSWlJSGh0Ykc1ek9uUnBabVk5SW1oMGRIQTZMeTl1Y3k1aFpHOWlaUzVqYjIwdmRHbG1aaTh4TGpBdklqNDhkR2xtWmpwUGNtbGxiblJoZEdsdmJqNHhQQzkwYVdabU9rOXlhV1Z1ZEdGMGFXOXVQand2Y21SbU9rUmxjMk55YVhCMGFXOXVQand2Y21SbU9sSkVSajQ4TDNnNmVHMXdiV1YwWVQ0TkNqdy9lSEJoWTJ0bGRDQmxibVE5SjNjblB6NHNsSmdMQUFBaXhVbEVRVlI0WHUyZGVad2NWM1h2Zi9kV2RmVyt6SzZaa1RRYVNkWklJOHN5dGlYdkFvenRHRnZZNElVSGdSY2dCTWg3NUpOQUh1UWxlUkJlQ0ZzUzRvQ1RQTUxpRUlOeEFFTnMyZGl4OFFaZVpGbTJMRm1XdFZ1V3JKblI3Tk5yZGEzM3ZEK3FxcnU2WmlScm01Rkc2dS9uMDFNMTFhZHVMZWQzenoxMXErbzJVS2RPblRwMTZ0U3BVNmRPblRwMTZ0U3BVNmRPblRwMVRrT0VFQ3QrWmRBbmZ6RTh2aWI0WFowekZDSTYvMEhWK29zdkQwdzh0L2ExZnVzYkZ0RjJWZjlnME81WVljRUZkVTRmaEJEbjNadFYzN094YUt6ZFhkUlc5Y2tSYVcrMmlNV05EZmg2aXU2K3JqWDEzNFBySEN0MUFaeG1DQ0hhSDFmTjZ6WVh5cDk4TVZ1NGVFOG94dm9MS3JTU0NtNEpST05KL00yODlNQW4yaElYTXNZR2crc2ZLM1VCbkNZVWhManF2b0wyNlYrUFpOKzVpNFVhRHFnNmlvVWlGRUdRd2NBSUtBbUdUeTZlaTIrMEtqZEhRcUg3Z21VY0QzVUJuRUtFRUkwYnk4WkhIaW5yYXpjVnRhdTJtY0J3Tmc5dW1sREF3TWh4UEFqUWJjS1N0amJjM2lML1pFMXo2c1BCc282WHVnQk9BVUtJM3QrVXRmKzFMbHU2WWFPRnRqMnFobEt1Z0xBQVpNWUFBdUJ6UGhGZ3lRcit6L3dtOVhPZHFTN0cyR2l3ek9PbExvQVpSQWl4NHFHeTlpZVA1dFhmZmNhazZKNnhMSmh1UUdFTVBPQjBSbzRRR0JoS0Z1RmQ4OXB4UjN2NFR4YkVJM2NFeXowUjZnS1lBWVFRSys3VmpFOC9NcGI5NkFiaTRkZEh4cUJZTmhUR2E1MU5BTnoyM29zQ3dpWWtVbWw4ZFU1azE0ZmFNOHNZYzZ4T0ZuVUJUQ05DaUNWUFd0Ym43aDBhKytoVGtFTDdSeDNIaDl6MnZlTDBTczFuamtOOG9sQUZ3d2M2R3VqL0xVaS9RMUdVcDRQYk9GSHFBcGdHaEJDcFJ5enJJNCtONTc3OEZIam10VU5EQ0ZzQ0liZDlyenJmT2YyZTg0T0NNRzFDUjBzTHZ0ekk3citsby9GOXdlMmNET29DT01rY0lMcnRydkhjMzYwenJRWGJSa2JCZFFOaEpsWGJkdFE2T3VoMEFHRENXVjRTREIrYjMyTGYwWjFleFRuZkhOeld5YUF1Z0pPRUVHTFpUMVQxanJ0emhhdlhsMVNZQlJVUnhpWW5kZ0FnSENINDIvcGc4bWNKUW1kTEs3N1N4TysvcVQwekxiVWZkUUdjT0VURWY2UHJmM3hQTnZlVlIwMHJQakE2amhnQVRxN3pVZXZZMmliQTErNjdvdkNXRndYRHg3cGE3RHNXcEZkenpsOE9idmRrd1lNTDZodzlRb2p6dmwwc1B2eUZZdWtmLzMxc1BENDZPb1lFbU9QOG1ocGUvVlFFZ1dvVEFJSlRGNFV6YndwZ1FYTXozaG5sNjZiVCthaEhnT09EaVBoRzAvenM5L1A1THp5azZabVJrVkhFR2E5dHg2ZXM4Vk8zK2NFbVFDV0dXK2RrckR0N21pNmViZ0hVSThBeElvUm91ak9mZmZUemhmdzNmelE2bXNtTmppTE91VlBqWFp0Snp2Y3kvYW1vQ01LWkNrRm9UcVd3Smk2OU9OM09SMTBBeDBaWmlLdStWaXhzK2V0Qzhlcm4rZ1lRMFUyRXdBRlJtOUJOcnZuVldsNVQrNE0yWU5BRWNGRTZodXRhNHQ4TGJuODZxQXZnS0hsVjE3LzI2ZXo0dzE4ZkhaazdNamFPT1BOcWZHMmlGM1FzNElyQ3RablMrYTROQ1NBV1MyQUZsWGZPaVNqM2VOdWVUdW9DZUF1RUVLMFA2dHEvL3FsYS9JdTdob2JES0tpVkx0eEtiVWV0azZ2U21DSUt1RFkxNlplN3JpVUlpek5Kck1sRTcyT01HVldENmFNdWdDTWdoR2o5dDNMeDExL1d5cDk2ck84Z1lwWUZhVkp2WG0ydHJzbnNhMnlxMDZtV01RSk1jQ3lUaGZYMjVzUXZnL3N5WGRRRmNCaE0wMXo3cFdMK3lTL21jaXRmM3I4ZktmQktpSGZhYTUvemhmZi81T3QrcjIzM2trRW5DdmhGNUpSSkJDU2pjU3lYckYwQXBxWFhieXJxQXBpQ0FhMTB5NThYY3cvY2tadFlQalk2aHJnazE3YmozalcrSDMvdGRoZFZncnhuNjYveC91VndydjBYWjVLNEpCTi9nREZQVXROUFhRQUI5cGEwbS85S1ZYLzY3ZEZSWm1UemlGVGErMnB0cmpwN2lvUXVzSHdxR3hBQXQ3L2ZzN2VJWVJFenhNVU40WFhCZlpwTzZnTHc4Y2pFNkMxL3FXWi9mdGY0bUt4b09tUW5qZlBWMktrdTVYd2hIVTVJOXh3L2xmTXJpV0VsUVhTV3g2TXhMSlJwTzJQc3BlQitUU2QxQWJnOFBERng2N2QwN2VlL3pFNUlTbG1IeE54MmU1TERnN1hhbmNMN3pyY3M2SHpQNFRVaUFHeEJtSnRPb1NldVBNSVlzMnYzYkhxcEN3REFyL01UTjM5YkwvM3NpV0tCUjNVRG5GWGIrS3JUcTg2djRzc0xmRFhjNy94SitNcnliRXppNk9JMnJtcUtQaDgwbjI3T2VnRThOREY2eSsxbDllZFBGQXM4ckJudWJkcEFLSzhrZmRVbXdIOUZNQ2xTVklUaGp5SlZHMjlkUnlBTVlCSTY3YkxacUVndjFPN2Q5SE5XQytENWZQN203NWpHeng0djVLV3E4NnUxMHo5ZlU2dHJQa0huZTdhSHVTU3NDTXVkRjBBcUZrTkhWTmw4TWw3ME9GYk9XZ0hzS09Wdi9iWmV1dmVSUWs0S2F3WjRKYnQzcDRCVDQrRTYwWmZvMVNaeHJqTnJtb1BxeDRrYzFhblBFZ3lBVFVCVEpJeTVFV245VExmL09Gc0ZVREsxbS8vWjFIOTZieTdMbFhMVitWVW5UMUZUL1k3MU9kUnBJSHpPRHRaNFQxaHVtVUViV3dEdElVN0xrNUZuWEtzWjVhd1RBQkhOdWIxVSt1RVBzMWxKMFF4SWJuMnM5czVWSGVWOEpqdHRzaWdtMi9qRHZiL00yblVaSkRrRVZzd1h6a3NyendiM2RTWTRxd1FnaEdqN2gzejJrVzhWY3ltN1dITGV3dkdGOHFscXJJZVgyTEdndmIrdDk2L3IyUWVkWDBrb25lK0VBRHJDbkFPd3ZEVm5rck5HQUVLSThBT0YzR1AvYXBaWFppZHlrMTdLOE5kTXJ3bVlYR09uc0VIVnNaN040UVJTNjN4WElJeWpXWkh6TTluOTYrZXNFY0RUcXZyMXZ5TnJ4ZDdCSWNTNDVIT1E1elRmMUh2QXczVlU5VHVmWXowYlVTdVdZRlBpRjA2d0hDSWdrMGhBRlhpS01aWU43dk5NY0ZZSTRNMVM2WDEzU2ZUWjlRUDlTRExIK1o1VDRJVnBOMlJYNW56aXFOcFVwMVVtTzdiU1dFd1ZLUUlmaFhITURVdVRTcDBwem5nQkVOSFM3OW5tRDMvY2R4QnhYdzJ1T011dHdkNXlmNjBOMmxRamh0L3B0Vk9RRnhVbWY4ZUkrU0lFQTRpQkEwaUZlRlY5TTh3WkxRQWhSUEw3eGV6Mzd5emwwNUp1dU0vcXUwNnVwbW5PWDg5QlFlZjdiRURPL0pRMmJpMzNva2tsVXRRMEF6NUJ1T1Z4QUVsSmNoZk1QR2UwQUo1UmkzOTl0OFN2R0J3ZGM1SSt4elhPbDU0US9EWGZYZTdQK0lNMkZlZjVtZ3ovdWtHQmVGYVZNbDBiWi9zRUNReXAwS2x6dzZuYjhqU1RzL1FQL3dqaXMwKy9zUjhKdDkzM0ozR1RNdlZBTGZWL2dxRWN3cjlzNnVaanlxYkV0OXliNThRUWxVNVpDM0JtQ2tBSU1lOEhwZEkzZnpJOGhCZzV5MnFkV0ZzYnZWcnR0ZEZWZ1hqQ1lNNy9iazJ1YmNkclJWU1p4MXM3bnhFREVhQzUyejhWbkpFQ2VLSlkrTE9mZ05yTW9ncXBFcElEdGN3NzZmNnA5M0daVkM5OU5oVUhCMjI4WUUvdVhLVjhYN1BpbXdvaUZQVVp2d1ZRNFl3VGdHcUl0OTlqR1grNHViKy9jcjAvdWViVnprK3FxWUVYUFlJMmNHMnFVNzlON1JUa1hVWDRsMVczUllLaGFGSHdNR2FNTTBvQVFvamtqd3RqMzcrL1VKQ2pOamtuMlF2WHFIVm1qZE9DTnBqQ3B1STBKM1N6WUdMbk5STVZXNjlNbjZXM3JxOGNRVURKUENXZGdNQ1pKb0JYeTZVLytJVWluNVBMNWQyeDlaejc3VUhuZTA2b09NdXpFVlZIVmUyRGpuVTM1bzhZbFdhbU5rclVSSXlBK0J4eEFKWU5IRkN0VTlZR25ERUNFRUwwM0t2clgzMnlmd0F4OTJWTmVIOERqcWc0MFUvRnNaN3pmTk1nbGJJQ0grODdmLzdnSzJzcW0xeXhCQTUySlJHbHZWVm1rak5HQUE4VTgxLzR1VzFGWmNQMGRmaGdjazExN2IwUTdId1hyUEZlcWE2MXJ6Wlh3cmNiK2hsVlh3d0JNY2UzQkpDYjRYdnp6dFNYTzdqYklsdGdvR2kwRUZGbHF6UEpHU0dBbkdtK1p4M3c0ZDJEUXdoWDd2SUZhckUzRmJXaDJlL1l3elVUbm9pSUFFc0F1aUNVTFVMUkFuSVdRWmNWaUZBTXBFUUJKUXFFWStEaEtLUndGRkk0QnNuOW55c3hNTmVHbEJoRUtBcUxoWkNWTTRsREpmdmk0SEhOQkpWSU5Wc2hJbjc3eVBDR3IycnFLajJiaDRTcUFPRFdWTStKZnVjQ2dmc0FxTFVoWXJCc2dpa0FTVmJBd1pDT1JkRVVqaURGR1JwZ1k0NGlJeE9TVUNnVStoS2NsOEtjSThJWndwd2h5aGpDc2dRWnpsTS9waEF3M1NlQURKdFFOZ21xVGNqck5oWjFOTEhya3RiLzdXMEsvMGZnOEthZFdTK0FiYVhTalg5YVZ0YzlQakNBQk9PSFRmcW1yUEcrNUEzdTY5bTZUUkJNUW1NeWdZNXdHT2ZFd29nVzgvbmVoR0xFT1grcE94bnU3MUxrUWtyaUQ3YUZKV0tNRVJHOXdEa3ZCL2R0TmpDckJVQkUvTXVEL1MvOG8yRmRaT1h5NFBEYTQ2Tnp2amR2Mm9EQk9KcmpTWnpma01SNWxpcDZFNUZuZTJMaHJSY2tsS2NBUE1ZWUt4NXBsRTRpQ3Q3Um9WUDFrTWV4TUtzRnNFTXIzZmlab3JydThYNm45bFBReVY0VEVCaUJ5NHNPaGszUXdkSFQzSXpMdVlrcjByRW4zdDBRdlM4anl6L25uSTk0MnhGQ3JMaDdST1ZsemU2YUh3dTlZM3RPdzM3VnhKQm1nUU1OdmNud1ZVV1RZQW1Dd2hnaU1nY2pXQytQYVkrR09kY3lpb3hNaUtNMUxHRlpZeGlXS2ZhOWtUTmZXTjRVd3FvNVVhUUFleWFHZzVtS1dTMkFyd3dOYnZ5SHNyYkt6QlVnSWRDZVY2N3BKMGNCSXFCa0N5eG9hTVROeVZEaC9hME45NjVVMkhjQUhOcXVJL3A4dm56ZFNGRmQyMit4MXYxNU5SV0xSaGNObGkwVUJBY1BSMkRZZ0dVVExBRllsb0JhS29NRnRnTXdKS0l4eUl4RFlnd1NNY2lNUVdFTXpESWhtUWFTTWtkYWtSQWhHNk1sWTl1UzVvZ1ZGYlE3eFBEeUZSMWhTRXc4K283T2VCN0EvdW1LSnJOV0FEczA3VDJmS1JZZWVMei9FQkpnVmVmN2FqamN5ejIvODIwQ0RBR3NiVzB3UHQvWitPc0xJL0pUVCtnaSswai8yUHNHeTlZMUJ3d1JWbU1wREJWVW1LWUFDUUdqckVFR2M1NGd0b1hUMU1BYjRkc3B0MmE3WGhOVHVUeXNkaTg3bDRZTUFBY0paMUFvQWtjMEhBV0lRWkZsWktKaEpHVU9GTVl4THlYWnRpbGVYVFluTXRUQTJiYnpPaUt2TEUveGx4TUtHMkNNVGZoT3lYRXhhd1h3OWFIQkYvNnVySzIyY3ZsSjQvSUZuZTRKd3lZR0dReC8xTmxzdks4cHNmT1hJd1d4UHFmMWpDcXg2S0NxbzFRc1FSWUFGNkxTa3hpTUlsT1dqVnJuQjV1aHl2d1V6VkN3VEM4WkZRUXdTTEFFRUFsSG9VZ2h4RUljYmZFUWVHbkNtcGNLRldUR25qbTNXUnFaTnllNjdwbzJiR2VNN1QvV2wwdG1wUUR5cHZuZWorZno5LzN5WUQrU05abi8xQ2ZXTytHQ0NCZkZZK2dLeTNnNlc4WVFKQWpkaEV3VUdNSGJPUzFIY2xSTjJZR3JpYUI5VFRsNEN4czRPVXN3aWhFQkpKekxTTVprRUhFazRuSEVaQW5OVVVBMjlXSlB5dDc1dFd1U1YzRE9kWGRMYjhtczdBaDZJSmYvL1JjMUhWRjRKL0VJSngvT2NoQWdnK1BWa283L0dNNWoyTEFSTmt4RWdjclBzOEIxT3NGNVh0K3d2UTRmZ1pJTmFFeUd4bVRvTmRNUWRNalFJRU9ITTErMEFOVWs2RGJCRmdUaDdaKzdMNVAyTWJEdmJzcnE3ay9WUm9LVFF5aGtJd3dMWmpHSDdQZzRkaHdZeHh0cUxERW5KZk16UGdJUTBkSS9IQnJhZE9mSVdDenUzZkVMMUo2cE1uNVBJRVJ3Mm01ZnJTWEJZTmdFQVE0aWhuUThqbVJJeHB4SUdLMWhHVW5PUVdvSnpEVHlEU0VKRVE2RW1JUVFnQkIzeXN3Yk52SW1JVzhJS0xGRVNtTUtSc3NDWTZvQjFTUVV5eVpLcWdhSkNCSVJGTzROS1R0NVAyc2lrU3NjSmc1dld6SVlybHZlaUs5Y0tkN2RGQTA5VWoxYmI4MnNFOENHUXVGN255NXJuM2l0N3hEQ2pOZWVFRlN6ZjcvVGd5ZVdpTUVTQkVNQW9WQVlEWkVJZWpJSnRKb2FGbkJDSmhKNllVbFVIczNJOGdPTFl5RzdMY3pCR0RzQVlFdGdkNmFFaUs3VUJScGZHZGZCZ0xXRG1ranZ6aHJObW9VVmZZYUNBVlBCNjZNbDVJczZoR2tpekozZkNtTEJxT0FYc3UrcXhuOU1sZzAwTnpYaFQ4L1gxOSt5UEg1NWNGL2VpbGtsQUNKS2ZMRi9ZTmZ0aFZKSFNETXFKOGsvU3BlLzVnZm5EVUV3aVNFZGpXTlJLb0Vsa3NBQ0dZZVdSZVM5RjZYRGozVkh3ODhRMFNITythN0FwazhZSXBLSmFCR0FwUWNLOWtXYlI0M3J0MmV0UlFlTWFIckhtSVgrQ1JXbVppRE15Umw5RkZOSE0yL2V5UXNJbWdqaFV4Y243TSt0a3EvaG5EOFYzTzViTWFzRU1HU2ExLzdCV1BiUlJ3WUdFZmQyZllvYVhva0tiais4WmdOaFJjRzV6WTI0UUNKY0dKTmZXeEVKL2VyOFpQaEJBRHM1NTJQQmJjMEVRb2d1QUZlL01tcmR1R2xRVzdVbEYycmZlTENJYk1sMFJpbHhlelg5RWNGL3JDV0RzR1paSzc1MGtmVVBDNXREbnd1V2Z6VE1LZ0g4ZEd6ODBUOHJscThkSHh0M0JuQTZndk50NGR4c2FVMmxjWGttZ2F2amZQaktUUHl1SHBrL0FPRDVZMDJXcGhzaWloSFIyLy8rSmZXT2Y5dHVMbWFtTnVtWXZDYUFFWU51Q3N4cGJjWVhWdHU3cmxrWVdua3NtYitmV1hNVklJVG9mRTdUTHh2TVZwLzJxWndZNzBTQndSSkFrWURHZEJwL3VLUUwzKzF1MnZhanJ2VEhQdDZVV0xZMEpQMFpZK3paMDgzNUFNQVlVd0ZzR1ZYdFR0MHduV1B5Y3BsQXpiZHRRaXlleEVlVzQ4MXJGeW5YSDYvek1ac0VzRVhYcjlzcUtRbHVXclhac2Z1OUlDQm4ybWpNWlBCN2M1cHc1NEttRjc3Vkd2dm91NVBoaThLTS9Udm5mTnhmM3VuSTFoSHJRL3VNWkpRTHU1ckl1azBBM0J5SENOQkp4Z2RXeHZDUlh2b01ZMnhmb0poall0WUk0RGZad20yNzFUTEMzaTlyK3BLK29ta2pFb3ZqRTB1NjhlL2RMVnUrdTZENTFuY21JcGR3enU4Nmtkb3hreEJSYU1PQStjRmRReW9VMzYrSFZwc0E1MU15Z1J0V051SURpOHovR1RvSnZ4ODhLd1FnaE9qWWFWbVhqK1VLMVd0bndXRFlBbVVtNGZyRkMvSE51YzA3L3FVNSt2RTFFWGtWNTN6R0JscytXWmhFbCs1VUl4Zms4d1hIS1c0VDV6VnpuQmhLSm1IMWtoWjhlSkZ4ZjNlVDhwMWdHY2ZEckJEQXE2cCt3eDQ1a3VDV080Z0dBWG5MUm1kTEMvNWlYbXZ4dXkzUmIzMm9JWFk1NS96ZkdHT25aS1NORStYUlBlcW5OZzNhaVBEYTVOWkwvbFNUMEx1Z0ZSL3RNZTlmUFZlNUxiais4WExhQzRDSXBBM2w4aTI3UzJXRXdXRUpRcEVZYmx6VWpUczZtMzd6aGRiMFZXMmNmL1prM0JrN1ZRZ2h6dDAwTHQ5MmNDZ0xtYm1PaDV2MEFWQU5RcytDVm54MHFYMy91eGVGYmoyWklwOE5Ba2p2TFpVdkg4c1hVTFpzeEdJSmZIRnhGLzZsSmZibjE0YWxhem5uTHdiWG1XMXM3TmUvdUg0a0ZKSmhPeGsvUE9jekZIVkNiM2NyUHRwanJMdDFxWFRieWI2Q09lMEZVRERzUzNkTG9haW1HMWpkTlI5LzM5bDg0QXVaNk5wMnp2K1dNV1lHN1djYlFvZ1Z6eHlpVzNmMWpVUGhYdGUyMHd0WTBJRXJlMXZ4bVpYbXV0dVdLYmVkekpydmNkb0w0SkZpcVhzWEQwazNMZXpDUDgxSi9mTEQ2ZGpWblBPSGduYXpsZlg5K2w4K2NVamhJYklyenJkdGdtcEorTUFsTGZqU0pYVC91eGFFYnAwdXNaLzJBdmpKU0piZjBKakNIWTJ4TzkvRythMmM4NzFCbTltS0VHTEZRL3ZwdHAxOTR3aHo5MzZGUldCeURMKy9PbzNQWDBCL3Npak5wcVhtZTV6MlhjSDNqMDE4WW1Vc0xuVkhsWDhOZmpmYitjOWQ1Vi9jdmxXK1pYaDREREpqS09tRXJyWkdmT3B0a3ZiQkh2YkhuUFB2QjljNTJaejJBamhUR1N6b0gvcnFGdVh1QjdZTUl3UUN1SUxyejIzQXpRdnRwOWQwOGovaW5MOGFYR2M2T0trQ0lLSVFFUzBGRUIwcm1XdDNqMm44OVdFVkJ5WjA3QmxUOGZxb2lyR1NCY01TMEMyQ1pnbFlRcUFoSm1OT01veVdoSUtXaEl6MlpBVEwyNk00cnoyRitRMGhOUmtPUFV4RU5vQ0JVM1huN21RaWhHajV6aFo5MXorK3FEVm9aUU1ydWxyeHZnVzYrWUhseWhkVEN2L2JvUDEwY2tJQ0VFTEVBU3dZTDFsWHZkeGZXTE4xc05UYmx6TjY5NDhiS0NLQ2taS0piTm1DWVF2WXdubHVYbmhQeG9LYzU5d0FjTVlnY1dmS21UT05LUnpOY1FVTlVRbFJVVVpYSm94MGhBMzB0TVQyZHpmRjE2L29qTDBabC9tVGpMR3hVekhNK3ZGQ1JBMC8zNkgvNmlzdjBtVmtFMjVkSHNYMTgrbWVpOXJ3VGM3NWpQMWFtTWR4Q1VBSXNXSklvLy94MjkxanYvUGJQZU5kZTRxS3RHdXdnTUZjQ2FaYUJpUUpBSUc1enF4TUFURG1iSlJJdVBQTzkwQzFBNFNjRXdYTEZRMFlCd21DRkZLUVRrVFFtb3BpVVhNY0RheGtMMm1KcW91YVkwOWYzTjI0Y1dGRzNnVGdhYzU1d2IrL3B4TjN2Vkw4N3VPbCtDZmxrb1VidTlpbW14Ynoyem5uTS9Jcm9WTnhUQUlRUXJ6LzhkY0xmM3pmcThPcm4rdTNRanNIaXpBMEUyQ0VoblFDY1VWQ0pNUlJMdVlSWWdMUmtJU3d6Q0dJM0JjcENLWk5NSm1NY0N3TzNSSXdMWUtxRzlCMUhad0JscUZENWs0azhNUlNzdzlFN2d1V0FzUWtnREcwWkZMb2FvcWh0eVdFYzFJWXVuQkJadlBxdWNtdGpWSHBQc2JZQzBkNnBXdW11R2Ryb1MwY0QzLzNrQlc2cVJuMlMrOC9oLzg5WSt3WDAvWEN4OUVTUEw5VElvUzQ1Y2Ric3AvOXp4MzV5NS92MTFEV0RIUWxHV1M3UER3L0V4dWZsNUZMcjQrV0gzN2J2SlJZdlNDRGw5NFlmWEsweEVaNzJ4VjBOU1pRTUF5TUZ3MFVpOEJnd2NEOEZxVjdmbHR5MVpiOVdld2RWbUVLNm9wRnc1ZnNITWhHbzdGRTExREJRTkhtS0pzMlNpVVZNaU9RYlVIbXZtamgzejl5aFdVN1VhSWxrMEJQV3hMbnBBbkxXOE03TCt2T3ZMUnFibUlkZ0MybjRqS3liSnJ2R2xiWm5mMG0yMzVoSS91eHd0alBUclhqUGFZNG5WV0k2TUs3TjQvOTRORStmdjcySVJWeFkweGIwaEo5ZHVXYzZKYUxsM1krdUtvWk96bm53OEgxamhjaFJIeC8xcnJ3cmhjSDVMaU1HOWUvV1dvUnR2V3V2YU5xVWtUU3NhRzhJejdiMUNHREtsRWlpQzBJaHUxRWluQTBpbmxOQ1N4cENxTzNrVmx2NjB4c2ZPZml6TVk1cWZDRGpMR3RqTEhSNFBvbkcwMkljeFNnaVhPK0lmamRxV2FLMCtmdzNMNzgvMzRscjN6ajhTMnZsMXNTeWhQdlc5bng2TFdMb285eXp2Y0ViYWNUSWtyc0dkYmFIaitvWC9EbTRPamExNGIxNVlONS9keFJRdzVuTlJzbFZRVlpCa0p1c3hHRTRMekhaOWpPSzFnTjZRU1d0Q1d3T01QUjB4U2FXTllhLzgwRmMxTXZkamNxbXdBOE0xdGY4ejVlSnAweUltTFBIOGc5Tkdnb1BmbWk5c3ZmT3ovekxjNzVRTkR1VkVGRWZBQ1llODlUQjY1NWJWaS9NS2VMMzltZnN4YjJGUVJ5K1NKZ08yS1lLakxBZlhMSXNBVXNBVEJKUmx0akN2TXlFU3hwa05HZFF2K2kxdmltODl2akIxWjJKQjRETU1RWWUrbDBDZGZUd2FUVDlOSkxGRUpiL3RNWGRDYS96emt2QmI4LzNTQ2l4QXNEMW1VUGJEMzAzbGY2Sm00NFVNVDh3UktRTHhZQnk0RHNYbDRlRGtGT2RMQnNRRllVcEJNeHpHMk1ZVTZNb2FjeGhMWUUzOUhiR2h0clRpb1B2NjA5WWNjVS9sOEF5b3l4MTA5MmNrbEVtVU1GN2IvdHo0Nzg2TEw1ODJja0VoMyt6TXhDaUNqMjB5M0RWenkzUC8vZXZTUHE5ZjBsMWpWUUVzZ1hTbUQyVzRzQmJvU3doQk1oaEp0REpLTWhkRFltMFpGU2tLSVNlbHFqSWhVSmJabmZFSjZZbXc2UFIwUHN2ODVwU1NJV0FoaGpUeENSditJUVk2eElSRW5mTW84TWdEV2IrZ3ZkTzRmTDc3UzVzclE3aFFOTjVZYkx6ajJYR1VIajZlRElaMk1XUTBTeEI3Zm4zLzdjbXhQdjNUbW9Ybk1nYjNmM0Z3VUtwYktiUkFwd1huMEg3M0Q0K3lSTW0wRHVJRlRSV0F5cHFJSjRXRUp6SW96MlZCaU5NUmw2TWF1MkprSm1TMHhCTWlvakZaRnNJaHFVSmRaWk5nVEtwb0JtQ2VUTEp2YU5sU05xcENsczhnZzZlTjY4WW43c0d4KzVxUFd2VC9ZOS95UHhWc2QvUmtCRWllY1BhVmM4dmlQN25nMXZqRjl5YUtKMFFaYkZNRmJVVVM1cllMYnA5RVM2SFZWSEE3bk5CN20vL1dzSkFna0NrME5nYnVjWEFEREdFSkpsbUtZRmd2T3lLQVFEb2pFc2JJcGpkYnMwK282RnFSOThjblhyUDUyS1hPc29EL2ZNNHNVM3gxYThlc2k4NmZtRHhaVUh4clZWZzBXemEweGpLTnVBWVZwUVZSV0t4Q0JzcTlJMVBWV24xT0Z3ZTdwaEU4RW1nSmdFSnNsSXhtTm9pTWhZbkNiN2tvV05MNzFqY2NNL3YzMSs1QW5PK2FGZ0dUUEYwUjdUR1FzUktZL3RtYmowM3EwVHpXblp2dW0xNFhKTFNPYVg3aG9xU2tvc25WQXRRa0V6b2VyV1VaOHNBcURJRWpKeEJVbFpJTTd0M055VVBMaWdLZkpTZDF2elE1KzZNTFdkYy81S2NMMVR3ZEVlMDdSRFJNemRuOGhnMGJyNDJYMVovdGp1TWV3ZUtxR2tXU2pxRm5LYWpaSmxvU01UUm05ckFrdmE0bGpTRk1HVnZSMVlsR0N2QTNnVFR0ZzlvY3MySVVUVFEzdkdJeUViNzFyZnAwcmJCM0twUlUyUjkrd2FMcU12cDJFb2IyQ2liRG52L1RPbjZVaUVKVFJGUTFqUUZNSEsrUTA0TUZiNjdhS1dWTjkxaXhQRlN4YWtubVNNbFJoalduQmJwNXBUSmdBaFJPZXZEK2hMOWc1TVhQUHN2bXlvS2NxdjM1ODFsUDZKc3RLVVNjMHY2QUxqcWduVnNKMVE2cmF6dGlDRVpZNjRJaUdtU0lpR09OSXhCYVphS0NURDh0RHl6aVRVc3JXcEtSM2Q5N1k1aWpadlR1dXZMbXBoMlJOOWcrWk1aY1lFSUlSSVRkaTQ0dTVOMlpYYjlnKzk1MkJPN3huU3BNYXN5VkV5YkdRTEpUQjNjRjFEMThIZGQrYTlUTjFKcXB4NWduTmIyYm0xN0loQ2trUGdrZ3hCaEZnMGdsUXNqSmdNTklSc3RFYWh0bVlTcjNURXhMN0ZuYzB2WERJdi91cWl0TFNEY3o0VTNNK3pqV2tYQUJHZC85MU51ZXRmN1p2NDVHdkRldGZ1Q1F1SHhvc2cwd1JzRXlCQWlVVVJWbVJJbkVGeSszTzlESnNJMEF3VGVsa0RmSGNJR1FpeWExOFZpTGROZDMwNFkvc1NreENKUkJCUlpMUm00a2hEUTNkR21qaW5QZjNzaXZiRWMxY3RpTHpTR0k4OHl4Z3JWa3M1TzVnMkFZenI0cnc3ZnR2MytmWDdzNys3ZVl6ejhZS0dWRVJDVjJNTXJZa1FGTE9JT1VrRkhXa0ZaY1BheGhnZlQwY2tKQ015U0FDYVpjTVVCTTJ5WWRob2pzaThkN1JrWWtJMU1hRXpsSGtFZzNrZFF4TkZHTGFBV2xMQkdDQnpJQ1N4S1R0OEJBRzJFTTVRTUl3am1VeWdOUm5CL0FURDRrWnBhSEZyZXNQUzVzaTY2NWVtdGpMR05nWFhQeE9aZkpaT2tQNko0Z1hmL08zUTV6YjBsVDQ0SVdYUUpCczR0eEU0dHpXOHF5a212elMzSWI3bjNOYUlub25KRC9rZWRkNTdwQ2RmaVNnRVlKSHYvL2ErckxabVUxOHhibGppK3AwakdwL1FyR1Z2NUFnSEN6WUdzaHJHY2tXWXBnR0pBWXBValN4K25ORy9DUllCak12SXBCS1lrMVN3TUVXWW01STM5ODV0ZWZoZGkrSWJsemFIdDUycE9jVGtzM0tjRUgySmYrM0pUL3psd1JMN0cwdEpvdFVhMXRjc2Jmek42czdNZzVrd05qSEdOcDVvZG40a2hCQ3JBRFJ0N2kvYytNcUEyanBZMEMvZk4ySE4yWjBsN0J0VE1UaWVoMlZha0JsQmtmbVVkdzRGdWFOL0VoQ0pSTkhXbUVKN0RGald5TFRPbFBMMDRvN1dCOVowaDdmTVQ4aW5iRlNSazgwVXArSFkrZG5MQTcwaUZQc25PWkcrU3VTRzc3dnR2TVo3R0pOZlBwVzF4bjFlOGVMK2tsaTU2VUIyelphKy9PVTdSNDJXL1NXT0hmMFR5T1ZMa0RrT0t3WUNJSVF6WEx3QVJ5b1pSM3REQW8yU2pubEphV1IrUytycG5yYlljNWQzaEYvcG1aTllmenBlNGgwTlV4ejZzZk55WDM1REtoM2Z0akRPZnNnNWZ5NzQvZWtBRVRVVFVjKytuTDUyL2V2WjZ6Y2NMSiszZWRqR3RyNXhGQW9seUJJUWx2aGh1NEtkNWtMQUJnZTRoRlFpZ2NaNENLMWhnYWFvMU4rUmxBNHViRzk4Y1Y1VXZIckRCYTJ2cFJqYlBsTy9DRTVFN0hqdlRCN21jSThOSVVRMzUveU40UExURlNMaVJIVHg5dUh5ZTlmdnk2N2RkRWpyZlhuWXhvNytDUlNMUjQ0TUhwVjdBR0Rna2d4SkRxRXhGVWRDRnBpZlZnQlQ3ZXZ0ekV6RUdHMWIzTkh3V2srajFDL0plTzdpemlRWVkzdVAxMkZ3OXo5UHRHamQ1dEcxODFMU1RmTVN5dnNYdHllUDY4bXNJeHppMlFFUk1TSzZkTnR3K2IwdkhDeTkrK1dEeFhNM2oxalkzamVCZktFRWlRTmhlZXFyQ2ovZVhVT2JBTk1taEpRd0dKY1FpeWhvU2NVUVlSWWlRcVc1RFZHVU5HdHpTekkwMGR1WmdxWlpPeWZLeHVabHpURjBaQ0xvU0VmUUVndWhaTm9ZVjAza05CdFoxY1NvYW1MUGtKcFVaTFoyeTZGU2E4K0N1U3N1bXhmRmltWjg0L3oyeEY4ZDc3dURSejZxc3d3aWtnRmNzajl2clgxbTMvajFHdzhVVm13ZFk5ZzVrTU5FVVlXcEd3aEpRRWc2Y25Ud0k4akpKWnpoZnprc1d5QVNqU0VrUzJDTVFaRTRrbEZuSUdoRjVnakxIQ0dKVjNvK0xadWdXemJ5dW8yY0pyQ3d2Ukh2bksvZ3FxN0lmVGYwcEw1Nm9wZXJSM2tZWngvdVcwNnIzc2hwbDY1L1BYZmRhMFBha2dNRk1YLzN1STI5ZzFtVU5BT1dvWU56QnBtem8zcll4STkzeDlCL1c3bHllNW1jVzh1d0NRZ3BhRWpIc2JxN0VkY3NDTnZYOVRiOVlubHorSjhaWTg4R3l6d2VqbjZQejNLSUtFMUVhN1lObHE1ODhjM0MxVnNIMWFhOHllY2ZMRmdZTEZnWVYwMk1UQlFnU0ZTNnJDWDNRVlh2ZG5JUVFVNlhkblZBYVFLWE9Ob2FVbWhOaE5EVEVzSGN1Qmk1Y21IajdxdVhwQitJY1B5S2M3NDlXTTZKTU1WdTFUa2FoQkJSeHRqbFEwVzd0UytuWHJkeGYxNDJiWEhWWU5GUzlvK1ZjU2luWVZTMVVOUnRxS1lGMVJEdy96U2dFKzRaVXVFUUdtSXlHbU1oTEdxT1kzRlRXR3ZPUko1YzNoSWJYTmtlZXh6QUp2L1AxNXhzNmdJNGliaFJvdkxqVVgzNVBPN2RrTWVqQi9QWTBKY0g4dm1LN2R5NUtWdzZONFhibHFkd2JlL2N5bklBRnVlOGFsaW5UcDA2ZGVyVXFWT25UcDA2ZGVyVXFWT25UcDA2ZGVyVXFWT25UcDA2eDhYL0I2RzhkNVA4cTY0VEFBQUFBRWxGVGtTdVFtQ0MiIGFsdD0iTG9nbyI+CiAgICA8YnI+CiAgICA8ZGl2IGNsYXNzPSJzZWFyY2gtYm94Ij4KICAgICAgPGlucHV0IGlkPSJzZWFyY2hJbnB1dCIgdHlwZT0idGV4dCIgcGxhY2Vob2xkZXI9IlNlYXJjaC4uLiI+CiAgICA8L2Rpdj4KICA8L2Rpdj4KCiAgPHNjcmlwdD4KCiAgICBjb25zdCBwYXJhbXMgPSBuZXcgVVJMU2VhcmNoUGFyYW1zKHdpbmRvdy5sb2NhdGlvbi5zZWFyY2gpOwogICAgY29uc3QgY29sb3IgPSBwYXJhbXMuZ2V0KCJjb2xvciIpOwoKICAgIGlmIChjb2xvciA9PT0gImJsYWNrIikgewogICAgICBkb2N1bWVudC5ib2R5LmNsYXNzTGlzdC5hZGQoImRhcmsiKTsKICAgIH0KCiAgICBjb25zdCBpbnB1dCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzZWFyY2hJbnB1dCcpOwogICAgaW5wdXQuYWRkRXZlbnRMaXN0ZW5lcigna2V5ZG93bicsIGZ1bmN0aW9uKGV2ZW50KSB7CiAgICAgIGlmIChldmVudC5rZXkgPT09ICdFbnRlcicgJiYgZG9jdW1lbnQuYWN0aXZlRWxlbWVudCA9PT0gaW5wdXQpIHsKICAgICAgICBjb25zdCBxdWVyeSA9IGlucHV0LnZhbHVlLnRyaW0oKTsKICAgICAgICBpZiAocXVlcnkpIHsKICAgICAgICAgIGNvbnN0IHVybCA9IGBodHRwczovL2R1Y2tkdWNrZ28uY29tLz9xPSR7ZW5jb2RlVVJJQ29tcG9uZW50KHF1ZXJ5KX1gOwogICAgICAgICAgd2luZG93LmxvY2F0aW9uLmhyZWYgPSB1cmw7CiAgICAgICAgfQogICAgICB9CiAgICB9KTsKICA8L3NjcmlwdD4KPC9ib2R5Pgo8L2h0bWw+"
 VELA_HOME_HTML=base64.b64decode(VELA_HOME_HTML).decode('utf-8')
 
-VELA_INVALID_HTML="<title></title><h1>Invalid Internal Page.</h1><p>Requested resource does not exist.<br>要求された内部URLは存在しません</p>"
+VELA_INVALID_HTML="<title></title><h1>Invalid Internal Page.</h1><p>Requested resource does not exist.</p>"
 
-VELA_ABOUT_HTML="""<!doctypehtml><html lang=ja><meta charset=utf-8><meta content="width=device-width,initial-scale=1"name=viewport><title>ソフトウェアについて</title><style>body,html{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111}h1{font-size:1.4rem;margin:0 0 8px}p{margin:0}.container{max-width:900px;margin:0 auto}table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ddd;width:22%;white-space:nowrap}td{padding:10px;border-bottom:1px solid #eee}code,pre{font-family:Menlo,Monaco,Consolas,"Liberation Mono","Noto Sans Mono JP",monospace;font-size:.95em}pre{white-space:pre-wrap;margin:0}.small{font-size:.9rem;color:#555}.actions{margin-top:14px}</style><div class=container><h1>VELA Browser</h1><p class=small>Vital Environment for Liberty Access<table><tr><th>概要<td><p>PythonおよびPyQt6, QtWebEngineを用いて開発された、モダンなWebブラウザです。<tr><th>バージョン情報<td><p>1.0.0 - Pre2<tr><th>リリースチャネル<td><p>Preview<tr><th>Language<td><p>日本語<tr><th>引数<td><p>"""
+VELA_ABOUT_HTML="""<!doctypehtml><html lang=ja><meta charset=utf-8><meta content="width=device-width,initial-scale=1"name=viewport><title>ソフトウェアについて</title><style>body,html{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111}h1{font-size:1.4rem;margin:0 0 8px}p{margin:0}.container{max-width:900px;margin:0 auto}table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ddd;width:22%;white-space:nowrap}td{padding:10px;border-bottom:1px solid #eee}code,pre{font-family:Menlo,Monaco,Consolas,"Liberation Mono","Noto Sans Mono JP",monospace;font-size:.95em}pre{white-space:pre-wrap;margin:0}.small{font-size:.9rem;color:#555}.actions{margin-top:14px}</style><div class=container><h1>VELA Browser</h1><p class=small>Vital Environment for Liberty Access<table><tr><th>概要<td><p>PythonおよびPyQt6, QtWebEngineを用いて開発された、モダンなWebブラウザです。<tr><th>バージョン情報<td><p>1.0.0<tr><th>バージョン名<td><p>Genesis<tr><th>リリースチャネル<td><p>Stable<tr><th>Language<td><p>日本語<tr><th>引数<td><p>"""
 for i, arg in enumerate(sys.argv):
     VELA_ABOUT_HTML+=": "+sys.argv[i]+"<br>"
 VELA_ABOUT_HTML+="""<tr><th>OS情報<td><p>"""
@@ -174,7 +195,7 @@ VELA_ABOUT_HTML+=detect_os()
 VELA_ABOUT_HTML+="""<tr><th>ライセンス<td><a href=https://www.gnu.org/licenses/gpl-3.0.html target=__blank>GNU General Public License v3</a><tr><th>依存モジュール<td><a href=https://www.qt.io/ target=__blank>Qt Framework</a><br><a href=https://www.riverbankcomputing.com/software/pyqt/ target=__blank>PyQt6</a><br><a href=https://github.com/spyder-ide/qtawesome target=__blank>QtAwesome</a><br><a href=https://github.com/Keychrom/Project-EQUA-Portable target=__blank>EQUA-Protable</a><tr><th>変更履歴<td><p><a href=vela://update-log>vela://update-log</a>を参照ください。</tr><div class=actions></div></div>"""
 VELA_BENCH_HTML="<script>window.location.replace('"+BENCH_URL+"');</script>"
 
-VELA_UPDATE_LOG_HTML="""<!doctype html><html lang="ja"> <head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <title>更新履歴</title> <style> html,body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111} h1{font-size:1.4rem;margin:0 0 8px} p{margin:0 0 12px} .container{max-width:900px;margin:0 auto} section{border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin-bottom:12px;background:#fafafa} h2{font-size:1.1rem;margin:0 0 6px;color:#333} .date{font-size:0.9rem;color:#666;margin-bottom:6px} ul{margin:0 0 0 20px;padding:0} li{margin-bottom:4px} .small{font-size:0.9rem;color:#555;margin-top:20px} </style> </head> <body> <div class="container"> <h1>更新履歴</h1> <p class="small">VELA のバージョン履歴と主な変更点。</p> <section> <h2>v1.0.0 Pre2</h2> <div class="date">2025-10-31</div> <ul> <li>起動時のタイトルの問題を修正しました</li> <li>Linux&RaspberryPi向け開発環境を改良しました</li> <li>macOSに正式に対応しました</li> <li>誤字を修正しました</li> </ul> </section> <section> <h2>v1.0.0 Pre1</h2> <div class="date">2025-10-24</div> <ul> <li>正式リリース候補版として、ログを削減しました</li> <li>プロファイル名が変更されます(ProfileAlpha1 -> ProfileV1)</li> <li>DoNotTrackヘッダーが送信されるようになりました</li> <li>UserAgentがMicrosoft Edgeの139～141のものにランダムに指定されます。これは起動する度に変わります</li> <li>vela: <li>vela: </ul> </section> <section> <h2>v0.5.0 Beta</h2> <div class="date">2025-10-13</div> <ul> <li>vela: <li>不正なvela: <li>特定の条件下で起動しなくなる問題を緩和しました</li> <li>vela: </ul> </section> <section> <h2>v0.4.0 Beta</h2> <div class="date">2025-10-12</div> <ul> <li>ログをlogzeroベースに移行しました</li> <li>起動時に独自のページを開くように修正しました</li> <li>色モードをEQUA互換から変更しました</li> <li>ダウンロードマネージャーのUIの問題を修正しました</li> <li>ファビコンが今後表示されます</li> </ul> </section> <section> <h2>v0.3.0 Alpha</h2> <div class="date">2025-09-24</div> <ul> <li>ログを実験的にlogzeroベースに移行しました</li> <li>WindowsとVELAの色モードが異なる場合の一部アイコンの色の問題を修正しました</li> <li>Windows版ビルドにnuitkaを使用し、大幅にファイルサイズを削減しました</li> <li>カラー機能を暫定実装しました</li> </ul> </section> <section> <h2>v0.2.0 Alpha</h2> <div class="date">2025-09-21</div> <ul> <li>RaspberryPi版においてGPUアクセラレーションを無効化しました</li> <li>OSやプラットフォームに関する最適化を実施しました</li> <li>OSやプラットフォームの判定関数を追加しました</li> <li>ログを多くしました</li> <li>PDFの読み込みを一時的に無効化しました</li> </ul> </section> <section> <h2>v0.1.0 Alpha</h2> <div class="date">2025-09-19</div> <ul> <li>初版アルファリリース</li> <li>EQUA-Portableをベースに開発しました</li> <li>アップデーターを削除したり、名称をユニークにするなど、EQUAとの切り離しを行いました</li> <li>タブは既定で左側になります</li> <li>既定はダークモードになります</li> </ul> </section> </div> </body> </html>"""
+VELA_UPDATE_LOG_HTML="""<!doctype html><html lang="ja"> <head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <title>更新履歴</title> <style> html,body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111} h1{font-size:1.4rem;margin:0 0 8px} p{margin:0 0 12px} .container{max-width:900px;margin:0 auto} section{border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin-bottom:12px;background:#fafafa} h2{font-size:1.1rem;margin:0 0 6px;color:#333} .date{font-size:0.9rem;color:#666;margin-bottom:6px} ul{margin:0 0 0 20px;padding:0} li{margin-bottom:4px} .small{font-size:0.9rem;color:#555;margin-top:20px} </style> </head> <body> <div class="container"> <h1>更新履歴</h1> <p class="small">VELA のバージョン履歴と主な変更点。</p> <section> <h2>v1.0.0</h2> <div class="date">2025-11-03</div> <p>初の正式リリースです<br>1.xはGenesisと名付けられました</p><ul> <li>タイトルが正常に反映されない問題を修正しました</li> <li>Windows版でコンソール出力が無効からアタッチに変更されました</li> <li>localhostを開けない問題を修正しました</li> <li>タブの描画速度を最適化しました</li> <li>ローカルファイルを開く動作をキャンセルしたときにabout:blankを開くバグを修正しました</li> <li>フルスクリーンの仕様を変更しました</li> <li>管理者権限で起動されるのを拒否するようになりました</li> <li>古いAboutページといくつかの廃止されたUIを削除しました</li> </ul> </section> <section> <h2>v1.0.0 Pre2</h2> <div class="date">2025-11-01</div> <ul> <li>起動時のタイトルの問題を修正しました</li> <li>Linux&RaspberryPi向け開発環境を改良しました</li> <li>macOSに正式に対応しました</li> <li>誤字を修正しました</li> </ul> </section> <section> <h2>v1.0.0 Pre1</h2> <div class="date">2025-10-24</div> <ul> <li>正式リリース候補版として、ログを削減しました</li> <li>プロファイル名が変更されます(ProfileAlpha1 -> ProfileV1)</li> <li>DoNotTrackヘッダーが送信されるようになりました</li> <li>UserAgentがMicrosoft Edgeの139～141のものにランダムに指定されます。これは起動する度に変わります</li> <li>vela: <li>vela: </ul> </section> <section> <h2>v0.5.0 Beta</h2> <div class="date">2025-10-13</div> <ul> <li>vela: <li>不正なvela: <li>特定の条件下で起動しなくなる問題を緩和しました</li> <li>vela: </ul> </section> <section> <h2>v0.4.0 Beta</h2> <div class="date">2025-10-12</div> <ul> <li>ログをlogzeroベースに移行しました</li> <li>起動時に独自のページを開くように修正しました</li> <li>色モードをEQUA互換から変更しました</li> <li>ダウンロードマネージャーのUIの問題を修正しました</li> <li>ファビコンが今後表示されます</li> </ul> </section> <section> <h2>v0.3.0 Alpha</h2> <div class="date">2025-09-24</div> <ul> <li>ログを実験的にlogzeroベースに移行しました</li> <li>WindowsとVELAの色モードが異なる場合の一部アイコンの色の問題を修正しました</li> <li>Windows版ビルドにnuitkaを使用し、大幅にファイルサイズを削減しました</li> <li>カラー機能を暫定実装しました</li> </ul> </section> <section> <h2>v0.2.0 Alpha</h2> <div class="date">2025-09-21</div> <ul> <li>RaspberryPi版においてGPUアクセラレーションを無効化しました</li> <li>OSやプラットフォームに関する最適化を実施しました</li> <li>OSやプラットフォームの判定関数を追加しました</li> <li>ログを多くしました</li> <li>PDFの読み込みを一時的に無効化しました</li> </ul> </section> <section> <h2>v0.1.0 Alpha</h2> <div class="date">2025-09-19</div> <ul> <li>初版アルファリリース</li> <li>EQUA-Portableをベースに開発しました</li> <li>アップデーターを削除したり、名称をユニークにするなど、EQUAとの切り離しを行いました</li> <li>タブは既定で左側になります</li> <li>既定はダークモードになります</li> </ul> </section> </div> </body> </html>"""
 
 # ==============================================================================================================================================================
 # Core/Settings
@@ -193,7 +214,7 @@ def get_portable_base_path():
             return os.path.dirname(os.path.abspath(__file__))
 
 PORTABLE_BASE_PATH = get_portable_base_path()
-print(get_portable_base_path())
+print('Base Path: ',get_portable_base_path())
 
 # PyInstallerで作成されたexeファイル内でリソースファイル（アイコンなど）のパスを解決するためのヘルパー関数
 def resource_path(relative_path):
@@ -425,7 +446,7 @@ class BookmarkHTMLParser(HTMLParser):
 # JavaScriptのコンソールエラーを抑制するためのカスタムWebEnginePage
 class SilentWebEnginePage(QWebEnginePage):
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
-        print(f"JS Console ({sourceID}:{lineNumber}): {message}")
+        print(f"{sourceID}:{lineNumber}: {message}")
         pass
 
     def createWindow(self, window_type):
@@ -718,13 +739,6 @@ class SettingsDialog(QDialog):
         self.categories_widget.item(2).setIcon(qta.icon('fa5s.user-shield', color=icon_color))
         self.categories_widget.item(3).setIcon(qta.icon('fa5s.bookmark', color=icon_color))
         self.categories_widget.item(4).setIcon(qta.icon('fa5s.shield-alt', color=icon_color))
-        self.categories_widget.item(5).setIcon(qta.icon('fa5s.info-circle', color=icon_color))
-
-        # 「このEQUAについて」ページを再生成して差し替える
-        about_page_widget = self.pages_widget.widget(5)
-        self.pages_widget.removeWidget(about_page_widget) # 古いページを削除
-        self.pages_widget.insertWidget(5, self.create_about_page())
-        about_page_widget.deleteLater()
 
     def create_categories_and_pages(self):
         """カテゴリリストと対応するページを作成し、ウィジェットに追加する"""
@@ -747,85 +761,6 @@ class SettingsDialog(QDialog):
         # 広告ブロック
         self.categories_widget.addItem(QListWidgetItem(qta.icon('fa5s.shield-alt'), "広告ブロック"))
         self.pages_widget.addWidget(self.create_ad_block_page())
-
-        # このEQUAについて
-        self.categories_widget.addItem(QListWidgetItem(qta.icon('fa5s.info-circle'), "About"))
-        self.pages_widget.addWidget(self.create_about_page())
-
-    def create_about_page(self):
-        """「このアプリについて」ページを作成する"""
-        page = QWidget()
-        layout = QVBoxLayout(page)
-        layout.setSpacing(15)
-        layout.setContentsMargins(40, 40, 40, 40) # ページ内の余白を調整
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        link_color = self.parent.theme_colors['link_color']
-        
-        # アプリアイコン
-        app_icon_label = QLabel()
-        icon_pixmap = QPixmap(resource_path('software.ico')).scaled(QSize(80, 80), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-        app_icon_label.setPixmap(icon_pixmap)
-        app_icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(app_icon_label)
-
-        # アプリ名とバージョン
-        title_label = QLabel("<p>VELA</p>")
-        title_font = title_label.font()
-        title_font.setPointSize(22)
-        title_font.setBold(True)
-        title_label.setFont(title_font)
-        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title_label)
-
-        version_label = QLabel(f"バージョン: {__version__}")
-        version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(version_label)
-
-        layout.addSpacing(20)
-
-        # 開発者情報
-        dev_label = QLabel("開発者: ABATBeliever")
-        dev_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(dev_label)
-
-        github_link_label = QLabel(f'詳しくは vela://about をご覧ください。')
-        github_link_label.setOpenExternalLinks(True)
-        github_link_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(github_link_label)
-
-        layout.addSpacing(20)
-
-        # 使用ライブラリ情報
-        libs_group = QGroupBox("使用ライブラリ")
-        libs_layout = QVBoxLayout(libs_group)
-        libs_layout.setSpacing(10)
-
-        qt_label = QLabel(f'<b>Qt Framework</b> - <a href="https://www.qt.io/" style="color: {link_color};">The Qt Company Ltd.</a>')
-        qt_label.setOpenExternalLinks(True)
-        libs_layout.addWidget(qt_label)
-
-        pyqt6_label = QLabel(f'<b>PyQt6</b> - <a href="https://www.riverbankcomputing.com/software/pyqt/" style="color: {link_color};">The Qt Company Ltd. and Riverbank Computing Ltd.</a>')
-        pyqt6_label.setOpenExternalLinks(True)
-        libs_layout.addWidget(pyqt6_label)
-
-        qtawesome_label = QLabel(f'<b>QtAwesome</b> (Font Awesome 5) - <a href="https://github.com/spyder-ide/qtawesome" style="color: {link_color};">The Spyder Development Team</a>')
-        qtawesome_label.setOpenExternalLinks(True)
-        libs_layout.addWidget(qtawesome_label)
-        layout.addWidget(libs_group)
-
-        # ライセンス情報
-        license_group = QGroupBox("ライセンス")
-        license_layout = QVBoxLayout(license_group)
-        license_label = QLabel(
-            'このアプリケーションは <a href="https://www.gnu.org/licenses/gpl-3.0.html" style="color: red;">GNU General Public License v3.0</a> の下で配布されています。<br>'
-            f'また、StudioNOSA(猫星氏)の<a href="https://github.com/Keychrom/Project-EQUA-Portable" style="color: red;">EQUA-Portableプロジェクト</a>のフォークです'
-        )
-        license_label.setOpenExternalLinks(True)
-        license_label.setWordWrap(True)
-        license_layout.addWidget(license_label)
-        layout.addWidget(license_group)
-
-        return page
 
     def create_general_page(self):
         """「一般」設定ページを作成する"""
@@ -867,19 +802,6 @@ class SettingsDialog(QDialog):
         # 起動設定
         startup_group = QGroupBox("起動設定")
         startup_layout = QVBoxLayout(startup_group)
-        startup_layout.setSpacing(15)
-        
-        # 検索エンジン設定
-        search_engine_layout = QHBoxLayout()
-        search_engine_label = QLabel("デフォルトの検索エンジン:")
-        self.search_engine_combo = QComboBox()
-        self.search_engine_combo.addItems(SEARCH_ENGINES.keys())
-        current_search_engine = self.parent.settings.value("search_engine", "DuckDuckGo")
-        self.search_engine_combo.setCurrentText(current_search_engine)
-        self.search_engine_combo.currentTextChanged.connect(self.parent.change_search_engine)
-        search_engine_layout.addWidget(search_engine_label)
-        search_engine_layout.addWidget(self.search_engine_combo)
-        startup_layout.addLayout(search_engine_layout)
         
         url_layout = QHBoxLayout()
         url_label = QLabel("新しいタブのデフォルトURL:")
@@ -912,24 +834,14 @@ class SettingsDialog(QDialog):
         
         layout.addWidget(startup_group)
 
-        # ダウンロード設定
-        download_group = QGroupBox("ダウンロード")
+        # システム情報の移動
+        download_group = QGroupBox("アプリの詳細について")
         download_layout = QVBoxLayout(download_group)
         download_layout.setSpacing(15)
         
         path_layout = QHBoxLayout()
-        path_label = QLabel("ファイルの保存先:")
-        
-        default_download_dir = os.path.join(PORTABLE_BASE_PATH, "downloads")
-        self.download_path_edit = QLineEdit(self.parent.settings.value("download_path", default_download_dir))
-        self.download_path_edit.setReadOnly(True) # ユーザーに直接編集させず、ダイアログ経由にする
-        
-        browse_button = QPushButton("参照...")
-        browse_button.clicked.connect(self.select_download_folder)
-        
+        path_label = QLabel("About ページは vela://about に移動しました。")
         path_layout.addWidget(path_label)
-        path_layout.addWidget(self.download_path_edit)
-        path_layout.addWidget(browse_button)
         download_layout.addLayout(path_layout)
         layout.addWidget(download_group)
         return page
@@ -1518,7 +1430,7 @@ class BrowserWindow(QMainWindow):
 
         # SPA遷移用の擬似プログレスバータイマー
         self._spa_progress_timer = QTimer(self)
-        self._spa_progress_timer.setInterval(10)  # 50msごとに更新
+        self._spa_progress_timer.setInterval(1)  # 1msごとに更新
         self._spa_progress_timer.timeout.connect(self._update_spa_progress)
         self.update_thread = None
         self.fullscreen_request = None # 全画面リクエストを保持
@@ -1883,7 +1795,8 @@ class BrowserWindow(QMainWindow):
         page.audioMutedChanged.connect(lambda muted, p=page: self.handle_audio_state_changed(p))
 
         browser.urlChanged.connect(lambda q, browser=browser: self.handle_url_changed(q, browser)) # URL変更をハンドル
-        browser.titleChanged.connect(lambda title, browser=browser: self.tabs.setTabText(self.tabs.indexOf(browser), title)) # タブのタイトルを更新
+        browser.titleChanged.connect(lambda title, browser=browser: self.on_title_changed(title, browser))
+#        browser.titleChanged.connect(lambda title, browser=browser: self.tabs.setTabText(self.tabs.indexOf(browser), title)) # タブのタイトルを更新
         # ページの読み込み進捗をハンドル
         page.loadStarted.connect(lambda browser=browser: self.handle_load_started(browser))
         page.loadProgress.connect(lambda progress, browser=browser: self.handle_load_progress(progress, browser))
@@ -1897,6 +1810,16 @@ class BrowserWindow(QMainWindow):
         self.update_tab_visuals(i)
 
         return browser, page
+
+    def on_title_changed(self, title, browser):
+        # タブタイトルを更新
+        index = self.tabs.indexOf(browser)
+        if index != -1:
+            self.tabs.setTabText(index, title)
+        # 現在のタブならウィンドウタイトルも更新
+        current_browser = self.tabs.currentWidget()
+        if current_browser == browser:
+            self.setWindowTitle(f"* {title}" if title else "*")
 
     def add_new_tab(self, qurl=None, label="新しいタブ"):
         """新しいタブを追加するメソッド"""
@@ -1971,9 +1894,9 @@ class BrowserWindow(QMainWindow):
         """擬似プログレスバーの値を更新するタイマーイベント"""
         # プログレスの進み方を調整
         if self._spa_progress_value < 60:
-            self._spa_progress_value += 15
+            self._spa_progress_value += 7
         elif self._spa_progress_value < 90:
-            self._spa_progress_value += 5
+            self._spa_progress_value += 2
         else:
             self._spa_progress_value += 1
         
@@ -1992,6 +1915,8 @@ class BrowserWindow(QMainWindow):
         self._spa_progress_timer.start()
 
     def handle_url_changed(self, q, browser):
+        current_browser = self.tabs.currentWidget()
+        self.setWindowTitle(f"* {current_browser.title()}" if current_browser.title() else "*")
         """URLが変更されたときの処理 (SPA遷移を含む)"""
         # この変更が現在のタブで起きたものか確認
         if browser == self.tabs.currentWidget():
@@ -2015,8 +1940,7 @@ class BrowserWindow(QMainWindow):
             # URLバーとウィンドウタイトルを更新
             self.url_bar.setText(current_browser.url().toString())
             self.url_bar.setCursorPosition(0)
-            label = current_browser.title()
-            self.setWindowTitle(f"* {label}")
+            self.setWindowTitle(f"* {current_browser.title()}" if current_browser.title() else "*")
             self.back_button.setEnabled(current_browser.page().history().canGoBack())
             self.forward_button.setEnabled(current_browser.page().history().canGoForward())
             # プログレスバーの状態を更新
@@ -2024,7 +1948,7 @@ class BrowserWindow(QMainWindow):
             self.update_progress_bar(progress if progress is not None and progress < 100 else 100)
         else:
             self.url_bar.setText("")
-            self.setWindowTitle(" ")
+            self.setWindowTitle("*")
             self.back_button.setEnabled(False)
             self.forward_button.setEnabled(False)
             self.update_progress_bar(100) # プログレスバーをリセット
@@ -2045,12 +1969,16 @@ class BrowserWindow(QMainWindow):
         # 3. 有効なスキームを持つ (http://..., file://...)
         is_url = (' ' not in url_text and '.' in url_text) or url_text.lower() == 'localhost'
         qurl = QUrl(url_text)
+
         if qurl.scheme():
             is_url = True
 
         if is_url:
             if not qurl.scheme(): # スキームがなければhttpsを付与
-                qurl.setScheme("https")
+                if url_text.lower() == 'localhost':
+                    qurl.setScheme("http")
+                else:
+                    qurl.setScheme("https")
             current_browser.setUrl(qurl)
         else:
             # 検索クエリとして処理
@@ -2170,12 +2098,11 @@ class BrowserWindow(QMainWindow):
         # サポートするファイルタイプをフィルタに設定
         file_filter = "すべてのファイル (*.*)"
         path, _ = QFileDialog.getOpenFileName(self, "ファイルを開く", home_dir, file_filter)
-
+        
+        if path == "":
+            return
         if not path.lower().endswith(".pdf"):
             self.add_new_tab(QUrl.fromLocalFile(path))
-        else:
-            self.add_new_tab(QUrl.fromLocalFile("about:blank"))
-
 
     def open_dev_tools(self, index):
         """指定されたタブの開発者ツールを開く"""
@@ -2309,6 +2236,8 @@ class BrowserWindow(QMainWindow):
 
     def update_tab_visuals(self, index):
         """タブの外観（グループの色のアイコン、またはデフォルトアイコン）を更新する"""
+        current_browser = self.tabs.currentWidget()
+        self.setWindowTitle(f"* {current_browser.title()}" if current_browser.title() else "*")
         widget = self.tabs.widget(index)
         if not widget: return
         page = widget.page()
@@ -2344,6 +2273,8 @@ class BrowserWindow(QMainWindow):
             )
         
         self.tabs.setTabIcon(index, icon)
+        current_browser = self.tabs.currentWidget()
+        self.setWindowTitle(f"* {current_browser.title()}" if current_browser.title() else "*")
 
     def export_bookmarks(self):
         """ブックマークをHTMLファイルにエクスポートする"""
@@ -2535,25 +2466,25 @@ class BrowserWindow(QMainWindow):
 
     def _toggle_fullscreen_ui(self, on):
         """全画面表示に合わせてUIの表示/非表示を切り替える"""
-        if on:
-            self.navigation_bar.hide() # ナビゲーションバーとタブバーを非表示
-            self.tabs.tabBar().hide()
-            self.showFullScreen()
-        else:
-            self.navigation_bar.show() # 再表示
-            self.tabs.tabBar().show()
-            self.showNormal()
+#        if on:
+#            self.navigation_bar.hide() # ナビゲーションバーとタブバーを非表示
+#            self.tabs.tabBar().hide()
+#            self.showFullScreen()
+#        else:
+#            self.navigation_bar.show() # 再表示
+#            self.tabs.tabBar().show()
+#            self.showNormal()
 
     def keyPressEvent(self, event):
         """キーボードイベントを処理する (Escキーでの全画面終了)"""
-        if event.key() == Qt.Key.Key_Escape and self.isFullScreen():
+#        if event.key() == Qt.Key.Key_Escape and self.isFullScreen():
             # 現在のページのWebActionをトリガーして全画面を終了させます。
             # これにより、ページから fullScreenRequested(toggleOn=False) が発行されます。
-            current_browser = self.tabs.currentWidget()
-            if current_browser:
-                current_browser.page().triggerAction(QWebEnginePage.WebAction.ExitFullScreen)
-        else:
-            super().keyPressEvent(event)
+#            current_browser = self.tabs.currentWidget()
+#            if current_browser:
+#                current_browser.page().triggerAction(QWebEnginePage.WebAction.ExitFullScreen)
+#        else:
+#            super().keyPressEvent(event)
 
     def update_theme_colors(self):
         """現在のテーマ設定に基づいて色の辞書を更新する"""
@@ -2679,6 +2610,8 @@ class BrowserWindow(QMainWindow):
     def handle_load_started(self, browser):
         """ページの読み込みが開始されたときの処理"""
         # SPA遷移用のタイマーが動いていれば停止する
+        current_browser = self.tabs.currentWidget()
+        self.setWindowTitle(f"* {current_browser.title()}" if current_browser.title() else "*")
         if self._spa_progress_timer.isActive():
             self._spa_progress_timer.stop()
         browser.setProperty("loadProgress", 0)
@@ -2686,6 +2619,8 @@ class BrowserWindow(QMainWindow):
             self.update_progress_bar(0)
 
     def handle_load_progress(self, progress, browser):
+        current_browser = self.tabs.currentWidget()
+        self.setWindowTitle(f"* {current_browser.title()}" if current_browser.title() else "*")
         """ページの読み込みが進んだときの処理"""
         browser.setProperty("loadProgress", progress)
         if browser == self.tabs.currentWidget():

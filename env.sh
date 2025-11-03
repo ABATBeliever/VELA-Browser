@@ -13,8 +13,12 @@ echo "Your Python Version:"
 python3 -V
 echo
 
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Administrator:yes"
+fi
+
 echo "Installing dependencies..."
-sudo apt update -y
+sudo apt update
 sudo apt install -y python3-pip patchelf
 
 PY_VER=$(python3 -V | awk '{print $2}' | cut -d. -f1,2)

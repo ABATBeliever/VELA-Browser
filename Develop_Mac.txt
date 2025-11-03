@@ -2,7 +2,7 @@ VELA 開発マニュアル for Mac
 
 <前提条件>
 以下の環境での開発を前提とします
-・MacOS Venture またはそれ以降
+・MacOS Ventura またはそれ以降
 ・実機
 ・Home brew 4.6.19またはそれ以降
 ・Python 3.13またはそれ以降
@@ -19,5 +19,5 @@ pip3 install qtawesome PyQt6 PyQt6-WebEngine logzero
 python3 Software.py
 
 <ビルド方法>
-pip install pyinstaller
+pip install pyinstaller pillow
 pyinstaller --windowed --onefile --icon=software.ico -F --clean Software.py

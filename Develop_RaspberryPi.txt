@@ -8,7 +8,7 @@ VELA 開発マニュアル for RaspberryPi
 
 ==============================================================================================================
 <自動セットアップ>
-VELA 1.0.0 Pre2以降、RaspberryPiOS向けのDevelopment Kit(β)が利用可能です。
+VELA 1.0.0 Pre2以降、RaspberryPiOS向けのDevelopment Kitが利用可能です。
 
 <Development Kitに入る>
 chmod +x ./env-rasp.sh

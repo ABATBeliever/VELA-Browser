@@ -9,7 +9,7 @@ VELA 開発マニュアル for Linux
 
 ==============================================================================================================
 <自動セットアップ>
-VELA 1.0.0 Pre2以降、Linux(Debian/Ubuntu)向けのDevelopment Kit(β)が利用可能です。
+VELA 1.0.0 Pre2以降、Linux(Debian/Ubuntu)向けのDevelopment Kitが利用可能です。
 
 <Development Kitに入る>
 chmod +x ./env.sh
