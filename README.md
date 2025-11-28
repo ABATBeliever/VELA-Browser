@@ -1,7 +1,7 @@
 # VELA Browser - Vital Environment for Liberty Access
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
-![Version](https://img.shields.io/badge/version-1.1.0Beta-green.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
 ![Version](https://img.shields.io/badge/Language-Python-yellow.svg)
 
 ---
@@ -39,10 +39,9 @@ VELA（Vital Environment for Liberty Access）は、PyQt6 と QtWebEngine を利
 
 | OS                      | アーキテクチャ | 対応 |
 |-------------------------|---------------|------|
-| Windows 10 以降          | x64           |対応済|
-| macOS Ventura 以降       | x64           |対応済|
+| Windows 11 以降          | x64           |対応済|
 | Linux Debian 系          | x64           |対応済|
-| Raspberry Pi Bookworm 以降 | arm64       |対応済|
+| Raspberry Pi Trixie 以降 | aarch64       |対応済|
 
 ※arm版Windows、madOS、及びLinuxは今後対応予定です
 
