@@ -42,8 +42,9 @@ VELA（Vital Environment for Liberty Access）は、PyQt6 と QtWebEngine を利
 | Windows 11 以降          | x64           |対応済|
 | Linux Debian 系          | x64           |対応済|
 | Raspberry Pi Trixie 以降 | aarch64       |対応済|
+| macOS | aarch64       |サードパーティによる対応|
 
-※arm版Windows、madOS、及びLinuxは今後対応予定です
+※arm版Windows、macOS、及びLinuxは今後対応予定です
 
 ---
 
