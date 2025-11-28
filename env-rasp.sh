@@ -20,7 +20,7 @@ fi
 echo "Installing dependencies..."
 sudo apt update -y
 sudo apt install fcitx5 fcitx5-mozc fcitx5-config-qt fcitx5-configtool
-sudo apt install libwebp7 libtiff6
+sudo apt install libwebp7 libtiff6 libminizip1 patchelf
 
 echo "Prepare the symbolic object..."
 sudo ln -s /usr/lib/aarch64-linux-gnu/libwebp.so.7 /usr/lib/aarch64-linux-gnu/libwebp.so.6

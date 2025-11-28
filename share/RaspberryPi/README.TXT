@@ -12,8 +12,8 @@
 ====================================================================================================
 ■ 概要
 
-バージョン     : 1.0.0
-対象OS         : RaspberryPiOS Bookworm～
+バージョン     : 1.1.0
+対象OS         : RaspberryPiOS Trixie～
 アーキテクチャ : aarch64
 
 VELA（Vital Environment for Liberty Access）は、PyQt6 と QtWebEngine の技術で開発された、
