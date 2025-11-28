@@ -1,8 +1,82 @@
 # -*- coding: utf-8 -*-
 #
-__version__       = "1.0.0"
-BENCH_URL         = "https://abatbeliever.net/app/VELABrowser/tool/Bench.html"
+
+
+# ==============================================================================================================================================================
+# Core/Boot
+__version__       = "1.1.0"
 print("VELA Browser " , __version__ , "- 'Genesis'\n")
+
+import sys
+import argparse
+
+parser = argparse.ArgumentParser(description="VELA Browser Args")
+parser.add_argument(
+    "-v", "--version",
+    action="store_true",
+    help="Show version information"
+)
+parser.add_argument(
+    "-o","--open",
+    action="append",
+    help="Open target (multiple allowed)"
+)
+parser.add_argument(
+    "-s", "--simulate",
+    action="store_true",
+    help="Simulate only"
+)
+parser.add_argument(
+    "-i", "--ignore-root-check",
+    action="store_true",
+    help="Ignore root privilege check"
+)
+parser.add_argument(
+    "-p", "--private-mode",
+    action="store_true",
+    help="Enable private mode"
+)
+parser.add_argument(
+    "--update-disable",
+    action="store_true",
+    help="Disable UpdateCheck"
+)
+parser.add_argument(
+    "--developer-option-enable",
+    action="store_true",
+    help="Enable developer mode if set to true"
+)
+
+args = parser.parse_args()
+
+if args.version:
+    sys.exit(0)
+
+if args.ignore_root_check:
+    bypasschk=True
+else:
+    bypasschk=False
+
+if args.simulate:
+    simulate=True
+else:
+    simulate=False
+
+if args.update_disable:
+    upd=False
+else:
+    upd=True
+
+if args.private_mode:
+    privateforce=True
+else:
+    privateforce=False
+
+openList=args.open
+
+#print("developer_mode:", args.developer_option_enable)
+
+BENCH_URL         = "https://abatbeliever.net/app/VELABrowser/tool/Bench.html"
 print('Made by ABATBeliever. Forked From EQUA-Portable')
 print('VELA Website     | https://abatbeliever.net/app/VELABrowser/')
 print('VELA Github Repo | https://github.com/ABATBeliever/VELA-Browser')
@@ -15,12 +89,10 @@ print('EQUA Portable    | https://github.com/Keychrom/Project-EQUA-Portable\n')
 import io
 import os
 import re
-import sys
 import json
 import ctypes
 import random
 import base64
-import logzero
 import sqlite3
 import platform
 import traceback
@@ -32,7 +104,7 @@ try: # winregはWindows専用モジュールなので、他のOSでエラーに�
 except ImportError:
     winreg = None # Windows以外のOS用のフォールバック
 
-from logzero import logger
+from packaging.version import parse as parse_version, InvalidVersion # バージョン番号の比較に使用
 from datetime import datetime # 日時情報の扱いに使用
 from html.parser import HTMLParser # HTMLの解析に使用 (ブックマークインポート)
 import qtawesome as qta # Font Awesomeアイコンを使用するためのライブラリ
@@ -67,8 +139,9 @@ def is_admin():
         return False
 
 if is_admin():
-    print("\nLaunching VELA as adminin is not permitted.\n")
-    sys.exit(1)
+    if not bypasschk:
+        print("\nLaunching VELA as adminin is not permitted.\n")
+        sys.exit(1)
 
 class DNTInterceptor(QWebEngineUrlRequestInterceptor):
     def interceptRequest(self, info):
@@ -117,25 +190,6 @@ class VelaSchemeHandler(QWebEngineUrlSchemeHandler):
             buffer.open(QIODevice.OpenModeFlag.ReadOnly)
             job.reply(b"text/html", buffer)
             self.buffers.append(buffer)
-
-# ==============================================================================================================================================================
-# Core/Debugger
-
-def custom_excepthook(exc_type, exc_value, exc_traceback):
-    if not issubclass(exc_type, KeyboardInterrupt):
-        logger.warning('The software will be terminated immediately.\n')
-
-    print('[Debugger] Except Detected')
-    logger.debug("[Debugger] Except Detected")
-    logger.debug("[Debugger] Type : %s", exc_type)
-    logger.debug("[Debugger] Value: %s", exc_value)
-    logger.error("[Debugger] StackTrace :\n%s", ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
-
-    logger.info('[Debugger] Saved to error.log\n*')
-    sys.__excepthook__(exc_type, exc_value, exc_traceback)
-    sys.exit()
-
-sys.excepthook = custom_excepthook
     
 # ==============================================================================================================================================================
 # Core/System
@@ -187,7 +241,7 @@ VELA_HOME_HTML=base64.b64decode(VELA_HOME_HTML).decode('utf-8')
 
 VELA_INVALID_HTML="<title></title><h1>Invalid Internal Page.</h1><p>Requested resource does not exist.</p>"
 
-VELA_ABOUT_HTML="""<!doctypehtml><html lang=ja><meta charset=utf-8><meta content="width=device-width,initial-scale=1"name=viewport><title>ソフトウェアについて</title><style>body,html{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111}h1{font-size:1.4rem;margin:0 0 8px}p{margin:0}.container{max-width:900px;margin:0 auto}table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ddd;width:22%;white-space:nowrap}td{padding:10px;border-bottom:1px solid #eee}code,pre{font-family:Menlo,Monaco,Consolas,"Liberation Mono","Noto Sans Mono JP",monospace;font-size:.95em}pre{white-space:pre-wrap;margin:0}.small{font-size:.9rem;color:#555}.actions{margin-top:14px}</style><div class=container><h1>VELA Browser</h1><p class=small>Vital Environment for Liberty Access<table><tr><th>概要<td><p>PythonおよびPyQt6, QtWebEngineを用いて開発された、モダンなWebブラウザです。<tr><th>バージョン情報<td><p>1.0.0<tr><th>バージョン名<td><p>Genesis<tr><th>リリースチャネル<td><p>Stable<tr><th>Language<td><p>日本語<tr><th>引数<td><p>"""
+VELA_ABOUT_HTML="""<!doctypehtml><html lang=ja><meta charset=utf-8><meta content="width=device-width,initial-scale=1"name=viewport><title>ソフトウェアについて</title><style>body,html{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111}h1{font-size:1.4rem;margin:0 0 8px}p{margin:0}.container{max-width:900px;margin:0 auto}table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ddd;width:22%;white-space:nowrap}td{padding:10px;border-bottom:1px solid #eee}code,pre{font-family:Menlo,Monaco,Consolas,"Liberation Mono","Noto Sans Mono JP",monospace;font-size:.95em}pre{white-space:pre-wrap;margin:0}.small{font-size:.9rem;color:#555}.actions{margin-top:14px}</style><div class=container><h1>VELA Browser</h1><p class=small>Vital Environment for Liberty Access<table><tr><th>概要<td><p>PythonおよびPyQt6, QtWebEngineを用いて開発された、モダンなWebブラウザです。<tr><th>バージョン情報<td><p>1.1.0<tr><th>バージョン名<td><p>Genesis<tr><th>リリースチャネル<td><p>Beta<tr><th>Language<td><p>日本語<tr><th>引数<td><p>"""
 for i, arg in enumerate(sys.argv):
     VELA_ABOUT_HTML+=": "+sys.argv[i]+"<br>"
 VELA_ABOUT_HTML+="""<tr><th>OS情報<td><p>"""
@@ -195,7 +249,7 @@ VELA_ABOUT_HTML+=detect_os()
 VELA_ABOUT_HTML+="""<tr><th>ライセンス<td><a href=https://www.gnu.org/licenses/gpl-3.0.html target=__blank>GNU General Public License v3</a><tr><th>依存モジュール<td><a href=https://www.qt.io/ target=__blank>Qt Framework</a><br><a href=https://www.riverbankcomputing.com/software/pyqt/ target=__blank>PyQt6</a><br><a href=https://github.com/spyder-ide/qtawesome target=__blank>QtAwesome</a><br><a href=https://github.com/Keychrom/Project-EQUA-Portable target=__blank>EQUA-Protable</a><tr><th>変更履歴<td><p><a href=vela://update-log>vela://update-log</a>を参照ください。</tr><div class=actions></div></div>"""
 VELA_BENCH_HTML="<script>window.location.replace('"+BENCH_URL+"');</script>"
 
-VELA_UPDATE_LOG_HTML="""<!doctype html><html lang="ja"> <head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <title>更新履歴</title> <style> html,body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111} h1{font-size:1.4rem;margin:0 0 8px} p{margin:0 0 12px} .container{max-width:900px;margin:0 auto} section{border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin-bottom:12px;background:#fafafa} h2{font-size:1.1rem;margin:0 0 6px;color:#333} .date{font-size:0.9rem;color:#666;margin-bottom:6px} ul{margin:0 0 0 20px;padding:0} li{margin-bottom:4px} .small{font-size:0.9rem;color:#555;margin-top:20px} </style> </head> <body> <div class="container"> <h1>更新履歴</h1> <p class="small">VELA のバージョン履歴と主な変更点。</p> <section> <h2>v1.0.0</h2> <div class="date">2025-11-03</div> <p>初の正式リリースです<br>1.xはGenesisと名付けられました</p><ul> <li>タイトルが正常に反映されない問題を修正しました</li> <li>Windows版でコンソール出力が無効からアタッチに変更されました</li> <li>localhostを開けない問題を修正しました</li> <li>タブの描画速度を最適化しました</li> <li>ローカルファイルを開く動作をキャンセルしたときにabout:blankを開くバグを修正しました</li> <li>フルスクリーンの仕様を変更しました</li> <li>管理者権限で起動されるのを拒否するようになりました</li> <li>古いAboutページといくつかの廃止されたUIを削除しました</li> </ul> </section> <section> <h2>v1.0.0 Pre2</h2> <div class="date">2025-11-01</div> <ul> <li>起動時のタイトルの問題を修正しました</li> <li>Linux&RaspberryPi向け開発環境を改良しました</li> <li>macOSに正式に対応しました</li> <li>誤字を修正しました</li> </ul> </section> <section> <h2>v1.0.0 Pre1</h2> <div class="date">2025-10-24</div> <ul> <li>正式リリース候補版として、ログを削減しました</li> <li>プロファイル名が変更されます(ProfileAlpha1 -> ProfileV1)</li> <li>DoNotTrackヘッダーが送信されるようになりました</li> <li>UserAgentがMicrosoft Edgeの139～141のものにランダムに指定されます。これは起動する度に変わります</li> <li>vela: <li>vela: </ul> </section> <section> <h2>v0.5.0 Beta</h2> <div class="date">2025-10-13</div> <ul> <li>vela: <li>不正なvela: <li>特定の条件下で起動しなくなる問題を緩和しました</li> <li>vela: </ul> </section> <section> <h2>v0.4.0 Beta</h2> <div class="date">2025-10-12</div> <ul> <li>ログをlogzeroベースに移行しました</li> <li>起動時に独自のページを開くように修正しました</li> <li>色モードをEQUA互換から変更しました</li> <li>ダウンロードマネージャーのUIの問題を修正しました</li> <li>ファビコンが今後表示されます</li> </ul> </section> <section> <h2>v0.3.0 Alpha</h2> <div class="date">2025-09-24</div> <ul> <li>ログを実験的にlogzeroベースに移行しました</li> <li>WindowsとVELAの色モードが異なる場合の一部アイコンの色の問題を修正しました</li> <li>Windows版ビルドにnuitkaを使用し、大幅にファイルサイズを削減しました</li> <li>カラー機能を暫定実装しました</li> </ul> </section> <section> <h2>v0.2.0 Alpha</h2> <div class="date">2025-09-21</div> <ul> <li>RaspberryPi版においてGPUアクセラレーションを無効化しました</li> <li>OSやプラットフォームに関する最適化を実施しました</li> <li>OSやプラットフォームの判定関数を追加しました</li> <li>ログを多くしました</li> <li>PDFの読み込みを一時的に無効化しました</li> </ul> </section> <section> <h2>v0.1.0 Alpha</h2> <div class="date">2025-09-19</div> <ul> <li>初版アルファリリース</li> <li>EQUA-Portableをベースに開発しました</li> <li>アップデーターを削除したり、名称をユニークにするなど、EQUAとの切り離しを行いました</li> <li>タブは既定で左側になります</li> <li>既定はダークモードになります</li> </ul> </section> </div> </body> </html>"""
+VELA_UPDATE_LOG_HTML="""<!doctype html><html lang="ja"> <head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <title>更新履歴</title> <style> html,body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111} h1{font-size:1.4rem;margin:0 0 8px} p{margin:0 0 12px} .container{max-width:900px;margin:0 auto} section{border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin-bottom:12px;background:#fafafa} h2{font-size:1.1rem;margin:0 0 6px;color:#333} .date{font-size:0.9rem;color:#666;margin-bottom:6px} ul{margin:0 0 0 20px;padding:0} li{margin-bottom:4px} .small{font-size:0.9rem;color:#555;margin-top:20px} </style> </head> <body> <div class="container"> <h1>更新履歴</h1> <p class="small">VELA のバージョン履歴と主な変更点。</p> <section> <h2>v1.1.0</h2> <div class="date">2025-11-29</div> <p>このバージョンでは主に引数機能を追加しました</p><ul> <li>WindowsOSにおける出力の問題を修正しました</li> <li>-h でヘルプを表示できます(Windowsの場合はVELA-Help.txtを参照)</li> <li>-v でバージョンを確認できます(Windows以外)</li> <li>-o または--open でファイルまたはURLを開けます 複数指定が可能です</li> <li>-s で起動シミュレーションができます(Windows以外)</li> <li>-i で管理者権限での起動を許可できます</li> <li>アップデート確認機能が実装されました</li> <li>Mac版におけるアイコンファイルの問題を修正しました</li> <li>UserAgentの範囲が139～142に変わりました</li> <li>過去の更新履歴項目で起こりうるエラーを修正しました</li> <li>プライベートモードの一部挙動が変更されました</li> </ul> </section> <section> <h2>v1.0.0</h2> <div class="date">2025-11-03</div> <p>初の正式リリースです<br>1.xはGenesisと名付けられました</p><ul> <li>タイトルが正常に反映されない問題を修正しました</li> <li>Windows版でコンソール出力が無効からアタッチに変更されました</li> <li>localhostを開けない問題を修正しました</li> <li>タブの描画速度を最適化しました</li> <li>ローカルファイルを開く動作をキャンセルしたときにabout:blankを開くバグを修正しました</li> <li>フルスクリーンの仕様を変更しました</li> <li>管理者権限で起動されるのを拒否するようになりました</li> <li>古いAboutページといくつかの廃止されたUIを削除しました</li> </ul> </section> <section> <h2>v1.0.0 Pre2</h2> <div class="date">2025-11-01</div> <ul> <li>起動時のタイトルの問題を修正しました</li> <li>Linux&RaspberryPi向け開発環境を改良しました</li> <li>macOSに正式に対応しました</li> <li>誤字を修正しました</li> </ul> </section> <section> <h2>v1.0.0 Pre1</h2> <div class="date">2025-10-24</div> <ul> <li>正式リリース候補版として、ログを削減しました</li> <li>プロファイル名が変更されます(ProfileAlpha1 -> ProfileV1)</li> <li>DoNotTrackヘッダーが送信されるようになりました</li> <li>UserAgentがMicrosoft Edgeの139～141のものにランダムに指定されます。これは起動する度に変わります</li> <li>vela:aboutを追加しました <li>vela:update-logを追加しました </ul> </section> <section> <h2>v0.5.0 Beta</h2> <div class="date">2025-10-13</div> <ul> <li>vela://home 以外のすべてのvela://にアクセスするとクラッシュする問題を修正しました <li>不正なvela://にアクセスできる問題を修正しました <li>特定の条件下で起動しなくなる問題を緩和しました</li> <li>vela:benchを追加しました </ul> </section> <section> <h2>v0.4.0 Beta</h2> <div class="date">2025-10-12</div> <ul> <li>ログをlogzeroベースに移行しました</li> <li>起動時に独自のページを開くように修正しました</li> <li>色モードをEQUA互換から変更しました</li> <li>ダウンロードマネージャーのUIの問題を修正しました</li> <li>ファビコンが今後表示されます</li> </ul> </section> <section> <h2>v0.3.0 Alpha</h2> <div class="date">2025-09-24</div> <ul> <li>ログを実験的にlogzeroベースに移行しました</li> <li>WindowsとVELAの色モードが異なる場合の一部アイコンの色の問題を修正しました</li> <li>Windows版ビルドにnuitkaを使用し、大幅にファイルサイズを削減しました</li> <li>カラー機能を暫定実装しました</li> </ul> </section> <section> <h2>v0.2.0 Alpha</h2> <div class="date">2025-09-21</div> <ul> <li>RaspberryPi版においてGPUアクセラレーションを無効化しました</li> <li>OSやプラットフォームに関する最適化を実施しました</li> <li>OSやプラットフォームの判定関数を追加しました</li> <li>ログを多くしました</li> <li>PDFの読み込みを一時的に無効化しました</li> </ul> </section> <section> <h2>v0.1.0 Alpha</h2> <div class="date">2025-09-19</div> <ul> <li>初版アルファリリース</li> <li>EQUA-Portableをベースに開発しました</li> <li>アップデーターを削除したり、名称をユニークにするなど、EQUAとの切り離しを行いました</li> <li>タブは既定で左側になります</li> <li>既定はダークモードになります</li> </ul> </section> </div> </body> </html>"""
 
 # ==============================================================================================================================================================
 # Core/Settings
@@ -240,7 +294,7 @@ SETTINGS_FILE_NAME = "settings.ini"
 DATA_DIR_NAME = "data"
 DEFAULT_ADBLOCK_LIST_URL = "https://easylist.to/easylist/easylist.txt"
 
-rnd_ver = random.randint(138, 141)
+rnd_ver = random.randint(139, 142)
 UserAgent = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{rnd_ver}.0.0.0 Safari/537.36 Edg/{rnd_ver}.0.0.0"
 
 # ==============================================================================================================================================================
@@ -261,21 +315,8 @@ class AdBlockInterceptor(QWebEngineUrlRequestInterceptor):
         self.ad_domains.clear()
         try:
             if not os.path.exists(self.block_list_path):
-                # ファイルが存在しない場合、デフォルトのリストで作成
-                with open(self.block_list_path, 'w', encoding='utf-8') as f:
-                    default_domains = [
-                        "doubleclick.net",
-                        "googlesyndication.com",
-                        "googleadservices.com",
-                        "adservice.google.com",
-                        "adnxs.com",
-                        "scorecardresearch.com",
-                        "criteo.com",
-                        "pubmatic.com",
-                        "ad.yieldmanager.com",
-                        "adform.net"
-                    ]
-                    f.write('\n'.join(default_domains) + '\n')
+                # ファイルが存在しないとき何もしない
+                return
 
             with open(self.block_list_path, 'r', encoding='utf-8') as f:
                 for line in f:
@@ -344,6 +385,45 @@ class UpdateBlocklistThread(QThread):
             self.finished.emit(False, "", str(e)) # 例外発生時に失敗シグナルを送信
             print('[UpdateBlocklistThread] Exception')
 
+# ==============================================================================================================================================================
+# UI/Update
+
+# 更新を非同期でチェックするためのワーカースレッド
+class UpdateCheckThread(QThread):
+    # シグナル: 処理完了時に (成功/失敗, 最新バージョン, リリースURL, アセットURL, エラーメッセージ) を送信
+    finished = pyqtSignal(bool, str, str, str, str)  # success, latest_version, release_url, asset_url, error_message
+
+    # スレッドのメイン処理
+    def run(self):
+        try:
+            url = "https://abatbeliever.net/app/VELABrowser/upd.txt"
+            req = urllib.request.Request(
+                url,
+                headers={'User-Agent': 'VELA-Update-Checker-v1'}
+            )
+            with urllib.request.urlopen(req, timeout=10) as response:
+                if response.status == 200:
+                    text = response.read().decode('utf-8').splitlines()
+
+                    # 1行目：バージョン番号
+                    latest_version = text[0].strip() if len(text) > 0 else ""
+
+                    # 2行目以降：更新内容（複数行対応）
+                    update_note = "\n".join(text[1:]).strip() if len(text) > 1 else ""
+
+                    # asset_url と release_url は外部サイトに置いていないので空文字
+                    self.finished.emit(True, latest_version, "", "", update_note)
+                else:
+                    self.finished.emit(
+                        False, "", "", "", f"サーバーエラー: {response.status}\nURL: {url}"
+                    )
+
+        except Exception as e:
+            self.finished.emit(
+                False, "", "", "",
+                f"{e}\nURL: https://abatbeliever.net/app/VELABrowser/upd.txt"
+            )
+            
 # ==============================================================================================================================================================
 # UI/Color
 
@@ -443,7 +523,7 @@ class BookmarkHTMLParser(HTMLParser):
             # <a> タグ内のテキストをタイトルとして取得
             self.current_title += data
 
-# JavaScriptのコンソールエラーを抑制するためのカスタムWebEnginePage
+# JavaScriptのコンソールエラーを表示するためのカスタムWebEnginePage
 class SilentWebEnginePage(QWebEnginePage):
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
         print(f"{sourceID}:{lineNumber}: {message}")
@@ -485,7 +565,7 @@ class SilentWebEnginePage(QWebEnginePage):
             if browser:
                 return browser.page()
             else:
-                _browser, new_page = new_window._create_new_browser(set_as_current=True, label="読み込み中...")
+                _browser, new_page = new_window._create_new_browser(set_as_current=True, label="...")
                 return new_page
 
         # 「新しいタブで開く」またはその他の場合
@@ -494,7 +574,7 @@ class SilentWebEnginePage(QWebEnginePage):
         else:
             set_as_current = True
 
-        _browser, new_page = main_window._create_new_browser(set_as_current=set_as_current, label="読み込み中...")
+        _browser, new_page = main_window._create_new_browser(set_as_current=set_as_current, label="...")
         return new_page
 
 # ブックマークウィンドウクラス
@@ -1413,11 +1493,13 @@ class BrowserWindow(QMainWindow):
     def __init__(self, profile):
         super().__init__()
 
-        self.setWindowIcon(QIcon(resource_path('software.ico')))
+        self.setWindowIcon(QIcon(resource_path('icon-win.ico')))
 
         self.profile = profile
         self.profile.installUrlSchemeHandler(b"vela", VelaSchemeHandler(self))
         self.is_private = self.profile.isOffTheRecord()
+        if privateforce:
+            self.is_private = True
 
         # 各種ダイアログやスレッドの参照を保持
         self.settings_dialog = None
@@ -1555,11 +1637,10 @@ class BrowserWindow(QMainWindow):
         self.open_file_action.triggered.connect(self.open_file)
         main_menu.addAction(self.open_file_action)
 
-        # 通常モードの場合のみ「新しいプライベートウィンドウ」を追加
-        if not self.is_private:
-            self.private_window_action = QAction(qta.icon('fa5s.user-secret'), "プライベートウィンドウ...", self)
-            self.private_window_action.triggered.connect(self.open_private_window)
-            main_menu.addAction(self.private_window_action)
+        # 「新しいプライベートウィンドウ」を追加
+        self.private_window_action = QAction(qta.icon('fa5s.user-secret'), "プライベートウィンドウ...", self)
+        self.private_window_action.triggered.connect(self.open_private_window)
+        main_menu.addAction(self.private_window_action)
         
         main_menu.addSeparator()
 
@@ -1621,7 +1702,7 @@ class BrowserWindow(QMainWindow):
             current_index = self.settings.value("session/current_index", 0, type=int)
             if urls:
                 for url in urls:
-                    self.add_new_tab(QUrl(url), "読み込み中...")
+                    self.add_new_tab(QUrl(url), "...")
                     print('[Session Restore]',url)
                 # 最初のデフォルトタブが残っている場合は閉じる
                 if len(urls) > 0 and self.tabs.count() > len(urls): # 復元したタブの他に余分なタブがあれば
@@ -1636,6 +1717,16 @@ class BrowserWindow(QMainWindow):
             # プライベートモードまたは設定が無効な場合はデフォルトページを開く
             self.add_new_tab(QUrl(self.default_new_tab_url), "新しいタブ")
 
+        if openList:
+            for url in openList:
+                url = url.replace("\\", "/")
+                if not url.startswith("http"):
+                    if url!="localhost":
+                        url = "file:///"+url
+                self.add_new_tab(QUrl(url), "...")
+                print('[Session Add]',url)
+
+
         # 起動時の広告ブロックリスト自動更新
         if not self.is_private and self.settings.value("ad_block_autoupdate_enabled", True, type=bool): # プライベートモードでなく、自動更新が有効な場合
             self.start_blocklist_update(silent=True)
@@ -1644,6 +1735,8 @@ class BrowserWindow(QMainWindow):
         if self.is_private:
             print('Private Mode Detected')
             self.setWindowTitle(f"{self.windowTitle()} (プライベート)")
+            
+        self.check_for_updates()
         
         # ウィンドウサイズと位置を復元 (通常ウィンドウのみ)
         if not self.is_private and self.settings.value("window_geometry_restore_enabled", True, type=bool):
@@ -2606,6 +2699,41 @@ class BrowserWindow(QMainWindow):
         # 設定ダイアログに結果を通知 (silentがTrueの場合は空メッセージ)
         self.blocklist_update_finished.emit(success, message)
 
+
+    def check_for_updates(self):
+        if upd:
+            """アプリケーションのアップデートを非同期でチェックする"""
+            self.update_check_thread = UpdateCheckThread()
+            self.update_check_thread.finished.connect(self.on_update_check_finished)
+            self.update_check_thread.start()
+
+    def on_update_check_finished(self, success, latest_version, release_url, asset_url, res):
+        """アップデートチェック完了時の処理"""
+        if not success:
+            print(f"アップデートチェックに失敗しました: {error_message}")
+            return
+
+        try:
+            # packaging.versionを使って、セマンティックバージョニングに沿った堅牢な比較を行う
+            print("Now",__version__,"Latest",latest_version)
+            if parse_version(latest_version) != parse_version(__version__):
+                self.show_update_notification(latest_version,res)
+        except InvalidVersion as e:
+            print(f"バージョン番号の比較に失敗しました: current='{__version__}', latest='{latest_version}', error: {e}")
+
+    def show_update_notification(self, new_version, res):
+        """アップデート通知のメッセージボックスを表示する"""
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(QMessageBox.Icon.Information)
+        msg_box.setWindowTitle("アップデートのお知らせ")
+        msg_box.setText(f"新しいバージョンが利用可能です。\n{__version__}->{new_version}")
+        msg_box.setInformativeText(f"詳細:\n{res}")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)# | QMessageBox.StandardButton.No)
+        msg_box.setDefaultButton(QMessageBox.StandardButton.Ok)
+        if msg_box.exec() == QMessageBox.StandardButton.Ok:
+            print("OK")
+#"            sys.exit()
+
     # --- ページ読み込みプログレスバー関連のハンドラ ---
     def handle_load_started(self, browser):
         """ページの読み込みが開始されたときの処理"""
@@ -2804,6 +2932,11 @@ if __name__ == '__main__':
 
     # 作成した永続プロファイルをメインウィンドウに渡して起動します。
     main_window = BrowserWindow(profile=persistent_profile) 
+    
+    if simulate:
+        print("\n\nSimulation Complete!")
+        sys.exit(0)
+    
     windows.append(main_window) # 最初のウィンドウの参照を保持
     main_window.show()
 

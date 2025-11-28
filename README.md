@@ -1,7 +1,7 @@
 # VELA Browser - Vital Environment for Liberty Access
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.1.0Beta-green.svg)
 ![Version](https://img.shields.io/badge/Language-Python-yellow.svg)
 
 ---

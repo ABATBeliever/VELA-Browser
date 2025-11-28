@@ -19,5 +19,5 @@ pip3 install qtawesome PyQt6 PyQt6-WebEngine logzero
 python3 Software.py
 
 <ビルド方法>
-pip install pyinstaller pillow
-pyinstaller --windowed --onefile --icon=software.ico -F --clean Software.py
+pip install pyinstaller
+pyinstaller --windowed --onefile --icon=icon-mac.icns -F --clean Software.py

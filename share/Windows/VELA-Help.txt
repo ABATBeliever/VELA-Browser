@@ -1,0 +1,13 @@
+VELA Browser Args
+
+options:
+  -h, --help            show this help message and exit
+  -v, --version         Show version information
+  -o, --open OPEN       Open target (multiple allowed)
+  -s, --simulate        Simulate only
+  -i, --ignore-root-check
+                        Ignore root privilege check
+  -p, --private-mode    Enable private mode
+  --update-disable      Disable UpdateCheck
+  --developer-option-enable
+                        Enable developer mode if set to true
