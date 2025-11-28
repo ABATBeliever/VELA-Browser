@@ -13,7 +13,7 @@ pip3 python が使えることを確認してください
 <開発環境の準備>
 python3 -m venv VELADev
 source ./VELADev/bin/activate
-pip3 install qtawesome PyQt6 PyQt6-WebEngine logzero
+pip3 install qtawesome PyQt6 PyQt6-WebEngine
 
 <実行方法>
 python3 Software.py

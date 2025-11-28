@@ -13,7 +13,7 @@ Pythonを公式サイトからダウンロードしてください。PATHを通�
 <開発環境の準備>
 Windows10以降向けのDevelopment Kit v2が利用可能です。
 env.bat
-pip install qtawesome PyQt6 PyQt6-WebEngine logzero
+pip install qtawesome PyQt6 PyQt6-WebEngine
 
 <実行方法>
 Software.py
