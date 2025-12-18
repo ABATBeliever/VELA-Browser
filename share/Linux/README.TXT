@@ -12,7 +12,7 @@
 ====================================================================================================
 ■ 概要
 
-バージョン     : 1.1.0
+バージョン     : 1.2.0
 対象OS         : Linux Debian/Ubuntu
 アーキテクチャ : x64
 
@@ -33,8 +33,8 @@ VELA（Vital Environment for Liberty Access）は、PyQt6 と QtWebEngine の技
 
 ■ 動作環境
 ----------------
-- OS    : Windows 10以降 x64 / macOS Ventura以降 x64 / Linux Debian系 / RaspberryPi Bookworm以降
-- ビルド: Pyinstaller または nuitka
+- OS    : Linux Debian系
+- ビルド: Pyinstaller
 
 ■ ライセンス
 ----------

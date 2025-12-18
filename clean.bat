@@ -16,6 +16,9 @@ del /f pyvenv.cfg
 del /f settings.ini
 del /f error.log
 del /f Software.spec
+del /f README.TXT
+del /f README.md
+del /f LICENSE.txt
 rmdir /S /Q "%BASE_DIR%LIB"
 rmdir /S /Q "%BASE_DIR%data"
 rmdir /S /Q "%BASE_DIR%build"

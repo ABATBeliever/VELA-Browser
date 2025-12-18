@@ -12,9 +12,9 @@
 ====================================================================================================
 ■ 概要
 
-バージョン     : 1.1.0
-対象OS         : macOS Ventura～
-アーキテクチャ : x64
+バージョン     : 1.2.0
+対象OS         : macOS
+アーキテクチャ : ARM
 
 VELA（Vital Environment for Liberty Access）は、PyQt6 と QtWebEngine の技術で開発された、
 軽量で拡張性の高い、マルチプラットフォームなウェブブラウザです。
@@ -33,8 +33,8 @@ VELA（Vital Environment for Liberty Access）は、PyQt6 と QtWebEngine の技
 
 ■ 動作環境
 ----------------
-- OS    : Windows 10以降 x64 / macOS Ventura以降 x64 / Linux Debian系 / RaspberryPi Bookworm以降
-- ビルド: Pyinstaller または nuitka
+- OS    : macOS ARM
+- ビルド: Pyinstaller
 
 ■ ライセンス
 ----------
