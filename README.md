@@ -1,8 +1,19 @@
 # VELA Browser - Vital Environment for Liberty Access
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
-![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.2.0-green.svg)
 ![Version](https://img.shields.io/badge/Language-Python-yellow.svg)
+
+---
+
+<h1>注意！</h1>
+現在、MSVCとnuitkaの互換性の問題から、Windows版のビルドが困難になっており、バージョンは1.2.0で凍結されています。
+
+バージョン1.1.0～1.2.0には**オフライン環境でソフトがクラッシュする**という問題が報告されています。
+
+暫定的な対応策として、オフライン用途で使用する場合は**「--update-disable」**の引数をつけて起動してください。
+
+ただし、この対応策をとっている間は更新確認を行わないため、注意してください。
 
 ---
 
@@ -18,7 +29,7 @@ VELA（Vital Environment for Liberty Access）は、PyQt6 と QtWebEngine を利
 ## 入手
 
 [こちら](https://github.com/ABATBeliever/VELA-Browser/releases) からお使いの環境に合わせてダウンロードしてください。インストールはありません。
-現在、自動更新機能はないのでご了承ください。
+1.1.0以降、自動更新が可能です。
 
 ---
 
