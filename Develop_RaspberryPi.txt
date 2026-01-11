@@ -41,7 +41,7 @@ source ./VELADev/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 pip install --only-binary=:all: PyQt6
 pip install --only-binary=:all: PyQt6-WebEngine
-pip install pyinstaller qtawesome
+pip install pyinstaller qtawesome packaging
 
 <実行方法>
 python3 Software.py

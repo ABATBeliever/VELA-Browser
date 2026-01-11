@@ -4,7 +4,7 @@
 
 # ==============================================================================================================================================================
 # Core/Boot
-__version__       = "1.2.0"
+__version__       = "1.2.1"
 print("VELA Browser " , __version__ , "- 'Genesis'\n")
 
 import sys
@@ -139,7 +139,7 @@ def is_admin():
 
 if is_admin():
     if not bypasschk:
-        print("\nLaunching VELA as adminin is not permitted.\n")
+        print("\nLaunching VELA as root is not permitted.\n")
         sys.exit(1)
 
 class DNTInterceptor(QWebEngineUrlRequestInterceptor):
@@ -274,7 +274,7 @@ from htmldat import VELA_HOME_HTML
 from htmldat import VELA_UPDATE_LOG_HTML
 from htmldat import VELA_WELCOME_HTML
 
-VELA_ABOUT_HTML="""<!doctypehtml><html lang=ja><meta charset=utf-8><meta content="width=device-width,initial-scale=1"name=viewport><title>ソフトウェアについて</title><style>body,html{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111}h1{font-size:1.4rem;margin:0 0 8px}p{margin:0}.container{max-width:900px;margin:0 auto}table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ddd;width:22%;white-space:nowrap}td{padding:10px;border-bottom:1px solid #eee}code,pre{font-family:Menlo,Monaco,Consolas,"Liberation Mono","Noto Sans Mono JP",monospace;font-size:.95em}pre{white-space:pre-wrap;margin:0}.small{font-size:.9rem;color:#555}.actions{margin-top:14px}</style><div class=container><h1>VELA Browser</h1><p class=small>Vital Environment for Liberty Access<table><tr><th>概要<td><p>PythonおよびPyQt6, QtWebEngineを用いて開発された、モダンなWebブラウザです。<tr><th>バージョン情報<td><p>1.2.0<tr><th>リリースチャネル<td><p>Stable<tr><th>バージョン名<td><p>Genesis<tr><th>Language<td><p>日本語<tr><th>引数<td><p>"""
+VELA_ABOUT_HTML="""<!doctypehtml><html lang=ja><meta charset=utf-8><meta content="width=device-width,initial-scale=1"name=viewport><title>ソフトウェアについて</title><style>body,html{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Helvetica,Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin:20px;color:#111}h1{font-size:1.4rem;margin:0 0 8px}p{margin:0}.container{max-width:900px;margin:0 auto}table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ddd;width:22%;white-space:nowrap}td{padding:10px;border-bottom:1px solid #eee}code,pre{font-family:Menlo,Monaco,Consolas,"Liberation Mono","Noto Sans Mono JP",monospace;font-size:.95em}pre{white-space:pre-wrap;margin:0}.small{font-size:.9rem;color:#555}.actions{margin-top:14px}</style><div class=container><h1>VELA Browser</h1><p class=small>Vital Environment for Liberty Access<table><tr><th>概要<td><p>PythonおよびPyQt6, QtWebEngineを用いて開発された、モダンなWebブラウザです。<tr><th>バージョン情報<td><p>1.2.1<tr><th>リリースチャネル<td><p>Stable<tr><th>バージョン名<td><p>Genesis<tr><th>Language<td><p>日本語<tr><th>引数<td><p>"""
 for i, arg in enumerate(sys.argv):
     VELA_ABOUT_HTML+=": "+sys.argv[i]+"<br>"
 VELA_ABOUT_HTML+="""<tr><th>OS情報<td><p>"""
@@ -2757,7 +2757,7 @@ class BrowserWindow(QMainWindow):
     def on_update_check_finished(self, success, latest_version, release_url, asset_url, res):
         """アップデートチェック完了時の処理"""
         if not success:
-            print(f"アップデートチェックに失敗しました: {error_message}")
+            print(f"アップデートチェックに失敗しました")
             return
 
         try:

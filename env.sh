@@ -6,7 +6,7 @@ VENV_DIR="$BASE_DIR/venvForVELA"
 
 clear
 echo
-echo "VELA Browser Development Kit v1Beta for Debian-Ubuntu"
+echo "VELA Browser Development Kit v1 for Debian"
 echo
 
 echo "Your Python Version:"
