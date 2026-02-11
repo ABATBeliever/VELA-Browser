@@ -6,6 +6,16 @@
 
 ---
 
+## 後継のおしらせ
+
+VELAは **2.x Praxis** に移行しました。
+
+Praxisは[別のリポジトリ](https://github.com/ABATBeliever/VELABrowser2x/)で管理され、LGPLv3の下、独自に開発されてます。
+
+このリポジトリのGenesisはもう開発されませんので、ご了承ください。
+
+---
+
 ## 概要
 
 <img width="1900" height="1023" alt="image" src="https://github.com/user-attachments/assets/a59498a8-e5e9-42eb-855e-fc1c5200719b" />
